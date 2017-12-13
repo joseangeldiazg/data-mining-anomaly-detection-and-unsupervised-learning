@@ -1,0 +1,163 @@
+---
+title: "Outliers_C1_LOF"
+author: "joseangeldiazg"
+date: "13/12/2017"
+output: html_document
+---
+
+### Máster En Ciencia de Datos -> Detección de anomalías
+### Juan Carlos Cubero. Universidad de Granada
+
+# MULTIVARIATE STATISTICAL OUTLIERS -> Multivariate Normal Distribution --> Mahalanobis
+
+Los outliers son respecto a un conjunto de variables. Un registro será un outlier porque tenga un valor anómalo en alguna variable o porque tenga una combinación anómala de valores.
+
+Necesita:
+
+*mydata.numeric
+*mydata.numeric.scaled
+
+Trabajamos sobre *mtcars[,-c(8:11)]*
+
+```{r}
+mydata.numeric = mtcars[,-c(8:11)]
+mydata.numeric.scaled = scale(mydata.numeric)
+```
+
+
+# Paquete mvoutlier
+
+
+## Obtención de los outliers multivariantes
+
+Calcula los outliers calculando las distancias de Mahalanobis y usando la aproximación de la Chi cuadrado. La estimación de la matriz de covarianzas es la estimación robusta según MCD. 
+No hay que normalizar los datos ya que la distancia de Mahalanobis está diseñada, precisamente para evitar el problema de la escala.
+
+uni.plot genera el gráfico similar a MiPlot_Univariate_Outliers con todas las columnas. Además, devuelve en $outliers los índices de los outliers. Establecemos los valores de significación, *alpha.value.penalizado* es para tener en cuenta el error FWER.
+
+
+```{r}
+alpha.value = 0.05
+alpha.value.penalizado = 1 - ( 1 - alpha.value) ^ (1 / nrow(mydata.numeric))       
+```
+
+Establecemos la semilla para el método iterativo que calcula MCD.
+
+```{r}
+set.seed(12)  
+```
+
+IMPORTANTE: Para que el resultado sea el mismo en todas las ejecuciones, siempre hay que establecer la semilla antes de lanzar la función correspondiente.
+
+Llamamos a uni.plot del paquete mvoutlier con symb=FALSE, alpha = alpha.value.penalizado.Guardamos el resultado en la variable mvoutlier.plot.
+
+```{r}
+mvoutlier.plot<-uni.plot(mydata.numeric.scaled, symb=FALSE, alpha = alpha.value.penalizado)
+```
+
+Esta función calcula los outliers MULTIVARIANTES según la distancia de Mahalanobis considerando la estimación robusta de la matriz de covarianzas -MCD- y la estimación robusta de la media de cada variable. También imprime un plot 1-dimensional para ver los valores que toman los outliers en cada atributo pero el plot no imprime las etiquetas de los outliers 
+
+En este caso, las variables posiblemente intersantes son las que sin tener valores muy elevados o bajos son consideradas outliers (rojo) ya que tienen combinacioenes de variables considerada anormal y por tanto es considerado outlier. 
+
+
+Nota: Es posible que haya que instalar el paquete pcaPP para que se pueda ejecutar uni.plot
+
+## Análisis de los outliers
+
+Vamos a ver las variables que más influyen en la designación de los outliers:
+
+1. Viendo el valor normalizado sobre cada variable para ver cuánto se desvía de la media. Pero esto no es suficiente ya que no es fácil apreciar interacciones entre atributos
+
+2. Gráficamente, con un biplot sobre las componentes principales. El Biplot permite ver las dimensiones importantes que influyen en la designación de los outliers
+
+Construimos las variables:
+
+* is.MCD.outlier que será un vector TRUE/FALSE que nos dice si cada dato es o no un outlier. 
+* numero.de.outliers.MCD 
+
+Para ello, accedemos a mvoutlier.plot$outliers , contamos el número total de outliers y lo guardamos en la variable numero.de.outliers.MCD
+
+```{r}
+is.MCD.outlier <-mvoutlier.plot$outliers
+is.MCD.outlier
+numero.de.outliers.MCD<-sum(is.MCD.outlier)
+numero.de.outliers.MCD
+```
+
+Veamos qué outliers son multivariantes "puros", es decir, que NO son 1 variantes con respecto a ninguna columna. Estos outliers multivariantes son interesantes ya que nos indican que no son outliers porque una de sus columnas tenga un valor extremo, sino porque hay alguna combinación anómala de valores de columnas.
+
+Por tanto, debemos construir las siguientes variables:
+
+* indices.de.outliers.en.alguna.columna -> A través de la función vector_claves_outliers_IQR_en_alguna_columna 
+
+* indices.de.outliers.multivariantes.MCD -> A partir de la variable is.MCD.outlier calculada anteriormente
+
+* indices.de.outliers.multivariantes.MCD.pero.no.1variantes   (debe usar setdiff sobre las anteriores variables)
+
+* nombres.de.outliers.multivariantes.MCD.pero.no.1variantes   (debe usar rownames)
+
+```{r}
+indices.de.outliers.en.alguna.columna<-vector_claves_outliers_IQR_en_alguna_columna(mydata.numeric.scaled)
+indices.de.outliers.en.alguna.columna
+
+indices.de.outliers.multivariantes.MCD<-which(is.MCD.outlier)
+indices.de.outliers.multivariantes.MCD
+
+indices.de.outliers.multivariantes.MCD.pero.no.1variantes<-setdiff(indices.de.outliers.multivariantes.MCD, indices.de.outliers.en.alguna.columna)
+indices.de.outliers.multivariantes.MCD.pero.no.1variantes
+
+nombres.de.outliers.multivariantes.MCD.pero.no.1variantes<-row.names(mydata.numeric)[indices.de.outliers.multivariantes.MCD.pero.no.1variantes]
+nombres.de.outliers.multivariantes.MCD.pero.no.1variantes
+```
+
+
+¿Cuál es el valor normalizado de cada outlier?, es decir, ¿Cuánto se desvía de la media de cada columna?
+
+Esta desviación ya se ha mostrado antes al llamar a uni.plot, pero sólo se muestran los outliers como puntos rojos. Al no tener las etiquetas, no sabemos cuáles son los valores de los outliers en cada columna. Construimos una tabla numérica **data.frame.solo.outliers** que muestre los valores normalizados de los outliers en todas las columnas. Para ello, usamos mydata.numeric.scaled y is.MCD.outlier:
+
+```{r}
+data.frame.solo.outliers<-data.frame(mydata.numeric.scaled[is.MCD.outlier,])
+data.frame.solo.outliers
+```
+
+
+## Boxplots
+
+Mostramos los boxplots de forma conjunta con las etiquetas de los outliers. Para ello llamamos a la función MiBoxPlot_juntos pasando como parámetro is.MCD.outlier. 
+
+```{r}
+MiBoxPlot_juntos(mydata.numeric.scaled, is.MCD.outlier) 
+```
+
+
+# Biplot
+
+
+El BoxPlot conjunto nos informa sobre los valores extremos que hay en cada variable. Puede apreciarse que casi todos los outliers multivariate corresponden a outliers univariate. Las únicas excepciones son Fiat 128 y Ferrari Dino, aunque Fiat 128 es casi un outlier en mpg
+
+El BiPlot nos muestra también esta información, junto con las correlaciones entre variables. Los puntos mostrados son resultados de proyecciones de n dimensiones a 2, por lo que sólo es una representación aproximada (mejor cuanto mayor sea la suma de los  porcentajes que aparecen como componentes principales PC1 y PC2)
+
+Llamamos a la función **MiBiPlot_Multivariate_Outliers**:
+
+
+```{r}
+MiBiPlot_Multivariate_Outliers(mydata.numeric.scaled, is.MCD.outlier, "Outliers-Biplot")
+MiBiPlot_Multivariate_Outliers(mydata.numeric.scaled, is.MCD.outlier, "Outliers-Biplot")
+```
+
+
+El BiPlot muestra claramente que Ferrari Dino no es outlier univariate en ninguna variable (no está en el extremo delimitado por los vectores correspondientes a las variables). Posiblemente sea un outlier multivariate debido a la combinación anormal de varias variables.
+
+Vamos a construir una matriz con los gráficos de dispersión obtenidos al cruzar todas las variables y vamos a destacar en rojo el dato correspondiente a Ferrari Dino. Para ello, obtenemos el índice de Ferrari Dino usando las funciones which y rownames y llamamos a la función MiPlot_Univariate_Outliers 
+
+
+ *MiPlot_Univariate_Outliers = function (datos, indices_de_Outliers, titulo)*
+
+
+```{r}
+indices_de_Outliers<-which(rownames(mydata.numeric)=="Ferrari Dino")
+MiPlot_Univariate_Outliers(mydata.numeric, indices_de_Outliers, "UnivariateOutliers")
+MiPlot_Univariate_Outliers(mydata.numeric, indices_de_Outliers, "UnivariateOutliers")
+```
+
+El parámetro indices_de_Outliers inicaalmente contendrá el índice del Ferrari Dino. Puede apreciarse que no hay una combinación clara de 2 variables que hagan del Ferrari un outlier. Es posible que intervengan más de dos variables. Efectivamente, si observamos la tabla data.frame.solo.outliers parece ser que consigue una aceleración qsec muy buena -1.3 (bastante cercana a la mayor -> Maserati Bora -1.8) con una potencia hp normal 0.4 (Maserati 2.7). Tener un peso wt ligero -0.4 seguramente es un factor decisivo (Maserati 0.3). La combinación peso, aceleración, hp es lo que hace de Ferrari Dino un outlier multivariate.
