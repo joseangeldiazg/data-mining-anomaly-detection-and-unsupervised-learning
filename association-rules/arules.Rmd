@@ -1,0 +1,75 @@
+---
+title: "Arules"
+author: "joseangeldiazg"
+date: "20/12/2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Preparación de las BDS
+
+El primer paso será pasar la base de datos a un conjunto de transacciones. 
+
+```{r}
+data("AdultUCI") # Lo cargamos en nuestra zona de trabajo
+dim(AdultUCI)  # Consultamos sus dimensiones
+AdultUCI[1:2,] # Vemos las 2 primeras filas para ver los atributos sus tipos
+```
+
+Las variables **fnlwgt** y **education-num** representan el nivel de estudios y son redundantes, por ello, las eliminaremos. Los demás atributos continuos los partiremos en intervalos para favorecer la interpretación de las reglas de asociación. Estos cortes, vendrían predispuestos por un experto ante un problema real. 
+
+* Eliminamos variables redundantes:
+
+```{r}
+AdultUCI[["fnlwgt"]] = NULL
+AdultUCI[["education-num"]] = NULL
+```
+
+* Hacemos los cortes
+
+```{r}
+AdultUCI[[ "age"]] = ordered( cut ( AdultUCI[[ "age"]], c(15,25,45,65,100) ) , labels = c ("Young", "Middle-aged", "Senior", "Old"))
+
+AdultUCI[[ "hours-per-week"]] = ordered( cut ( AdultUCI[[ "hours-per-week"]], c(0,25,40,60,168) ) , labels = c("Part-time", "Full-time", "Over-time", "Workaholic"))
+
+AdultUCI[[ "capital-gain"]] = ordered( cut ( AdultUCI[[ "capital-gain"]], c(-Inf,0,median(AdultUCI[[ "capital-gain"]][AdultUCI[[ "capital-gain"]]>0]), Inf) ) , labels = c("None", "Low", "High"))
+
+AdultUCI[[ "capital-loss"]] = ordered( cut ( AdultUCI[[ "capital-loss"]], c(-Inf,0, median(AdultUCI[[ "capital-loss"]][AdultUCI[[ "capital-loss"]]>0]), Inf) ) , labels = c("None", "Low", "High"))
+```
+
+Una vez hecho esto, habiendo eliminado las variables numéricas y habiendo discretizado las demás, podemos pasar nuestra base de datos a transanccional.
+
+```{r}
+Adult <- as(AdultUCI, "transactions")
+summary(Adult)
+```
+
+
+Ya podemos obtener información de que 30162, tienen valores completos, el restante hasta el tope, es decir, 18000 tienen algun campo con valor perdido. Si queremos obtener estos ejemplos con valores perdidos, podemos usar el siguiente gráfico, donde veremos puntos blancos cada vez que el un par clave-valor no esté dispobible, es decir, para la transacción x ese ítem no toma ningun valor. 
+
+```{r}
+image(Adult)
+```
+
+Vamos a ver los mejores items, es decir, aquellos con soporte más elevado. 
+
+```{r}
+itemFrequencyPlot(Adult, support = 0.1, cex.names=0.8)
+```
+
+
+Los dos items con casi el 100% (*capital-gain=none*, *capital-loss=none*), puedo unirlos a casi cualquier cosa que no cambiarán las medidas de las reglas, pasa siempre, por tanto no necesito tenerlos en cuenta en ninguna regla ni itemset que genere después.
+
+Tambien veo que lo que más tengo es gente mediana, puedo hacerme una idea de la edad de la gente. Por otro lado, podemos ver que el 70% trabajan en el sector privado, son autónomos. También podemos ver que la población blanca es la mayoritaria. Además es una población donde se trabaja bastante. 
+
+Sabemos que estamos en EEUU ya que podemos ver como el país natal es este, también estaría interesante comprobar el 20% de inmigrantes. 
+
+Los valores con alto soporte, que no son muy interesantes, pueden serlo si nos quedamos con la negada es decir con los minoritarios, que podemos sustraer del dataset, sobre el los que podremos volver a aplicar este gráfico y analizar los comportamientos para esos subconjuntos. 
+
+
+
+
+
