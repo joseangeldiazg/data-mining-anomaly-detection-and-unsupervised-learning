@@ -1,10 +1,51 @@
 %---------------------------------------------------
-% Nombre: capitulo1.tex  
+% Nombre: clustering.tex  
 % 
 % Texto del capitulo 1
 %---------------------------------------------------
 
 \chapter{Clustering}
+
+En este segundo capítulo, estudiaremos las técnicas de agrupamiento o clustering, desde un enfoque en profundidad que nos llevará desde una introducción \textit{grosso modo} del problema (sección \ref{introduccion}) al estudio de técnicas extendidas de clustering (sección \ref{extension}) o sus aplicaciones (sección \ref{aplicaciones}) , con las que se dará por terminado este capítulo.  
+
+\section{Introducción}
+\label{introduccion}
+
+El clustering, se enmarca dentro del aprendizaje no supervisado y es una técnica de minería de datos descriptiva. Estas técnicas, a diferencia de las predictivas, no se usan para predecir una salida sino que nos ofrecen herramientas (gráficos, reglas, agrupamientos) para entender y describir de una mejor manera que está ocurriendo con unos determinados datos de entrada, de los que no disponemos información previa acerca de su estructura. En el caso del clustering, \textbf{tratamos de encontrar agrupaciones de los datos de entrada, representados por un vector de atributos, en función de distintas medidas de similitud}, este concepto, será estudiado en detalle en la siguiente sección. 
+
+\section{Medidas de similitud}
+
+
+
+\section{Métodos}
+
+\subsection{Particionales}
+
+\subsection{Jerárquicos}
+
+\subsection{Basados en densidad}
+
+\section{Validación}
+
+\section{Extensiones del Clustering}
+\label{extension}
+
+Pese a que los métodos estudiados anteriormente son los más extendidos, la potencia y la utilidad de las técnicas de clustering hacen que cada vez sean más las extensiones de los métodos de agrupamiento que tratan de mejorar los métodos clásicos o de solventar problemas de eficiencia de algunos métodos como por ejemplo, el agrupamientos jerárquico. 
+
+Algunas de estas técnicas pueden ser la técnica BIRCH \cite{BIRCH}, CURE \cite{CURE} o ROCK \cite{ROCK} usadas todas para aumentar la eficiencia de las técnicas de clustering jerárquico y por otro lado, el método de las \textbf{k-medias difuso}, que hace uso de lógica difusa para mejorar los resultados del algoritmo k-medias; sobre el cual, además, encontramos en la literatura distintas aproximaciones que ilustran el uso de \textit{medoides} frente a las medias. Un algoritmos de esta vertiente es el algoritmo CLARANS \cite{CLARANS}. 
+
+\section{Aplicaciones}
+\label{aplicaciones}
+
+Desde su primera incursión allá por finales de los años 60 en el campo del análisis de datos,  las técnicas de clustering han sido aplicadas a distintos problemas dentro de la informática además de otras áreas como la biología, la medicina o el marketing. Acorde a Kumar \cite{clustering2},  algunas de las áreas y aplicaciones más famosas o más extendidas dentro del clustering podrían ser:
+
+\begin{itemize}
+\item Psicología y medicina: Una enfermedad podrá tener distintos síntomas o variaciones en la presentación de los mismos, el clustering, puede ser usado en estas áreas para identificar estas variaciones y agrupar en subcategorias.
+\item Marketing y negocios: El clustering en marketing tiene infinitud de aplicaciones desde ser utilizado para segmentar clientes a la detección de comunidades en redes sociales para aplicar una determinada promoción. 
+\item  Meteorología: Entender el clima de nuestro planeta requiere el estudio y representación de patrones, las técnicas de agrupamiento pueden ser utilizadas para la búsqueda de estos,.
+\end{itemize}
+
+Para ilustrar ejemplos reales de aplicación de las técnicas de clustering y remarcar su importancia en el ámbito de investigación, se ha indagado acerca de estudios recientes que utilicen métodos de agrupamiento, algunos de estos estudios pueden ser el artículo de Moosavi \cite{com}, donde se proponen técnicas de clustering para agrupar usuarios en redes sociales en función de sus acciones, o el artículo de Baier \cite{mkt} donde se proponen clustering de imágenes con fines enfocados al marketing. 
 
 \clearpage
 %---------------------------------------------------
