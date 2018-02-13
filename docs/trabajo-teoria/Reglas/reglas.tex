@@ -10,14 +10,24 @@ La reglas de asociación dentro del ámbito de la informática no son muy distintas
 
 \section{Medidas Clásicas}
 
-Las forma clásica de media la bondad o ajuste de las reglas de asociación a un determinado problema, vendrá dada por las medidas del \textbf{soporte} y la \textbf{confianza}, que podremos definir de la siguiente manera:
-
+La forma clásica de medir la bondad o ajuste de las reglas de asociación a un determinado problema, vendrá dada por las medidas del soporte, la confianza y el lift, que podremos definir de la siguiente manera:
 \begin{itemize}
-	\item{Soporte}: Se representa como \textit{supp (X->Y)}, y representa la fracción de las transacciones que contiene tanto a X como a Y. 
-	\item{Confianza}: Se representa como \textit{conf (X->Y)}, y representa la fracción de transacciones en las que aparece el ítem Y, junto en las que aparece el ítem X.
-\end{itemize} 
 
-Pese a que estas medidas son las más comunes y extendidas, hay innumerables propuestas de medias complementarias en la literatura, tales como el \textbf{lift, convicción, factor de certeza, diferencia absoluta de confianza} entre otras muchas. 
+	\item Soporte: Se representa como \textit{supp (X$\rightarrow$Y)}, y representa la fracción de las transacciones que contiene tanto a X como a Y respecto al total de transacciones. Quedaría definido por la siguiente ecuación:
+	\begin{equation}
+	supp(X \rightarrow Y) = \frac{supp(X \cup Y)}{total transacciones}
+	\end{equation}
+	\item Confianza: Se representa como \textit{conf (X$\rightarrow$Y)}, y representa la fracción de transacciones en las que aparece el ítem Y, de entre aquellas transacciones donde aparece el ítem X. Su ecuación sería:
+	\begin{equation}
+	conf(X \rightarrow Y) = \frac{supp(X \rightarrow Y)}{supp(X)}
+	\end{equation}
+	\item Lift: El \textit{lift}, es una medida útil para evaluar la independencia entre los ítems de una determinada regla  de asociación. En una regla del tipo \textit{conf (X$\rightarrow$Y)}, esta medida representa el grado en que X tiende a ser frecuente cuando A está presente en la regla, o viceversa. El lift, quedará definido matemáticamente de la siguiente manera:
+	\begin{equation}
+	lift(X \rightarrow Y) = \frac{conf(X \rightarrow Y)}{supp(Y)}
+	\end{equation}
+\end{itemize}
+
+Pese a que estas medidas son las más comunes y extendidas, hay innumerables propuestas de medias complementarias en la literatura, tales como la \textbf{ convicción, factor de certeza, diferencia absoluta de confianza} entre otras muchas. 
 
 \section{Obtención de reglas}
 

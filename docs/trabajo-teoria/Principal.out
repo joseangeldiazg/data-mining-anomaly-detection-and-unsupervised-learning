@@ -1,0 +1,21 @@
+\BOOKMARK [0][-]{chapter.1}{Introducci\363n}{}% 1
+\BOOKMARK [1][-]{section.1.1}{T\351cnicas supervisadas y no supervisadas}{chapter.1}% 2
+\BOOKMARK [1][-]{section.1.2}{Organizaci\363n del trabajo}{chapter.1}% 3
+\BOOKMARK [0][-]{chapter.2}{Clustering}{}% 4
+\BOOKMARK [1][-]{section.2.1}{Introducci\363n}{chapter.2}% 5
+\BOOKMARK [1][-]{section.2.2}{Medidas de similitud}{chapter.2}% 6
+\BOOKMARK [1][-]{section.2.3}{M\351todos}{chapter.2}% 7
+\BOOKMARK [2][-]{subsection.2.3.1}{Particionales}{section.2.3}% 8
+\BOOKMARK [2][-]{subsection.2.3.2}{Jer\341rquicos}{section.2.3}% 9
+\BOOKMARK [2][-]{subsection.2.3.3}{Basados en densidad}{section.2.3}% 10
+\BOOKMARK [1][-]{section.2.4}{Validaci\363n}{chapter.2}% 11
+\BOOKMARK [1][-]{section.2.5}{Extensiones del Clustering}{chapter.2}% 12
+\BOOKMARK [1][-]{section.2.6}{Aplicaciones}{chapter.2}% 13
+\BOOKMARK [0][-]{chapter.3}{Detecci\363n de anomal\355as}{}% 14
+\BOOKMARK [0][-]{chapter.4}{Reglas de Asociaci\363n}{}% 15
+\BOOKMARK [1][-]{section.4.1}{Medidas Cl\341sicas}{chapter.4}% 16
+\BOOKMARK [1][-]{section.4.2}{Obtenci\363n de reglas}{chapter.4}% 17
+\BOOKMARK [1][-]{section.4.3}{Principales algoritmos}{chapter.4}% 18
+\BOOKMARK [2][-]{subsection.4.3.1}{Apriori}{section.4.3}% 19
+\BOOKMARK [2][-]{subsection.4.3.2}{Eclat}{section.4.3}% 20
+\BOOKMARK [2][-]{subsection.4.3.3}{FP-Growth}{section.4.3}% 21
