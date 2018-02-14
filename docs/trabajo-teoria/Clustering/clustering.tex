@@ -15,17 +15,147 @@ El clustering, se enmarca dentro del aprendizaje no supervisado y es una técnica
 
 \section{Medidas de similitud}
 
+Para poder discernir entre si una determinada muestra es similar a otra, se usan las denominadas \textbf{medidas de similitud}. Antes de entrar en detalle en la definición de estas medias, es necesario destacar la \textbf{naturaleza subjetiva} del clustering, o lo que es lo mismo, que en función del problema, los datos y las preguntas a las que se intentan dar respuesta puede haber varias soluciones apropiadas. Por otro lado, cabe esperar una fase previa de pre-procesado de datos que puede incluir filtrado de variables (generalmente guiadas por un experto) o normalizaciones, para poder obtener estas distancias o similitudes apropiadamente. 
 
+Es menester mencionar que los datos de partida, podrán darse en forma de dataset (Items - Variables) o por medio de una matriz de proximidad, que habitualmente será obtenida del dataset pero que en ciertas aplicaciones puede generarse directamente. 
+
+\section{Similitud en atributos continuos}
+
+Estas métricas, se usan para medir la distancia entre dos individuos x e y, se usan en atributos continuos y estos deberán estar normalizados en la mayoría de los casos. Ademas, deberán satisfacer las propiedades reflexiva, simétrica y desigualdad triangular. Algunas de las medidas más famosas son:
+
+\begin{itemize}
+\item Distancia Minkowsky: 
+Es una medida que agrupa la distancia manhattan y euclídea. Puede expresarse con la siguiente fórmula. 
+\begin{equation}
+d_{r}(x,y)=(\sum_{j=1}^{J}\left | x_{j}-y_{j} \right |^{r})^{\frac{1}{r}} , r \geq 1
+\end{equation}
+
+\item Distancia Euclídea:
+
+Es la medida más usada y la que mejor se adapta a atributos continuos, aunque puede verse afectada por outliers. Quedaría definida con la expresión matemática:
+
+\begin{equation}
+d_{2}(x,y)=\sqrt{\sum_{j=1}^{J}(x_{j}-y_{j})^{2}}
+\end{equation}
+
+\item Distancia Manhattan:
+
+Esta métrica también es conocida como métrica del taxista, y su nombre viene dado por el recorrido que un coche debería de hacer por Manhattan para ir de un punto A al B, es decir, con líneas rectas que son la suma de las diferencias absolutas de sus coordenadas. Su fórmula sería:
+
+\begin{equation}
+d_{1}(x,y)=\sum_{j=1}^{J}\left | x_{j}-y_{j} \right |
+\end{equation}
+
+
+\item Distancia de Chebyshev:
+
+Esta medida es menos conocida, y representa la distancia con un símil del mundo del ajedrez, en el que la distancia entre dos muestras vendrá dada por el número movimientos que el rey tendría que hacer para llegar de uno a otro. Podíamos definirlo matemáticamente de la siguiente manera:
+
+\begin{equation}
+d_{\infty }(x,y)=max_{j=1...J}\left |  x_{j}-y_{j}\right |
+\end{equation}
+
+\end{itemize}
+
+\section{Similitud en atributos no continuos}
+
+En este punto encontramos multitud de medidas en función del dominio del problema. Aunque las medidas para atributos no continuos son muy variadas se han recogido algunas de las más famosas en la tabla \ref{tabla}.
+
+\begin{table}[]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{|c|c|c|}
+\hline
+\textit{\textbf{Medida}}         & \textit{\textbf{Idea}}                                                                                      & \textit{\textbf{Uso}}                                                                                                                        \\ \hline
+\textit{\textbf{Levenshtein}}    & \begin{tabular}[c]{@{}c@{}}Nº de operaciones para \\ transformar una cadena\\ en otra\end{tabular}          & \begin{tabular}[c]{@{}c@{}}Se usa en correctores ortográficos,\\ sistemas de reconocimiento de voz\\ o plagios entre otros.\end{tabular}     \\ \hline
+\textit{\textbf{Jaccard}}        & \begin{tabular}[c]{@{}c@{}}Basada en teoría de \\ conjuntos\end{tabular}                                    & \begin{tabular}[c]{@{}c@{}}Su principal uso está en el \\ campo de la Recuperación de\\ Información\end{tabular}                             \\ \hline
+\textit{\textbf{Datos Binarios}} & \begin{tabular}[c]{@{}c@{}}Se basa en la diferencia\\ entre dos cadenas de \\ números binarios\end{tabular} & \begin{tabular}[c]{@{}c@{}}Biología y estudio de comunidades\\ ecológicas\end{tabular}                                                       \\ \hline
+\textit{\textbf{Coseno}}         & \begin{tabular}[c]{@{}c@{}}Se basa en la similitud coseno \\ sobre un Document Term\\  Matrix\end{tabular}  & \begin{tabular}[c]{@{}c@{}}Su principal uso está en el campo\\  de la Recuperación de Información \\ en buscadores como Google.\end{tabular} \\ \hline
+\end{tabular}%
+}
+\caption{Medias de similitud en atributos no continuos.}
+\label{tabla}
+\end{table}
 
 \section{Métodos}
 
+En esta sección veremos los distintos métodos o enfoques de agrupamiento, así como introduciremos a grandes rasgos algunos de los principales algoritmos de cada vertiente. 
+
 \subsection{Particionales}
+
+La principal carácteristicas de los métodos de clustering particionales reside en parámetro \textit{\textbf{k}}, que podrá estar definido o no. Este valor, es un número entero que determinará el número de particiones ( \textit{k=2 -> 2 particiones}) a realizar del conjunto global. Los elementos de cada uno de los grupos `se parecerán' más entre sí, que entre cualquier miembro de otro grupo distinto. Las particiones, podrán atender a criterios locales, los cuales suponen que cada grupo está representado por un un elemento prototipo, o globales, basados en la estructura local de los datos, como la densidad.  En función de cada uno de estos, encontramos distintos algoritmos, como puede ser en algoritmo de las K-medias (global) \cite{kmeans} o el DBSCAN (local) \cite{dbscan}, los cuales definiremos a continuación.
+
+
+\subsubsection{K-Medias}
+
+El método de las k-Medias es bastante sencillo. Se parte de un valor de K, que indicará el número de clusters finales, y el número de centroides aleatorios iniciales: Los pasos del algoritmo serían los siguientes:
+
+\begin{enumerate}
+\item Se obtienen k muestras aleatorios sobre la muestra, serán nuestros centroides de partida. 
+\item Cada elemento en la muestra, se asigna al centroide de partida más cercano obteniendo k grupos. 
+\item Dentro de cada grupo, se calculan sus centroides y se vuelven a asignar los elementos más cercanos, refinando los grupos iniciales. 
+\item Mientras el proceso no converja, se continúa. 
+\end{enumerate}
+
+
+Estos pasos, pueden verses ilustrados en la figura \ref{imgkm}.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=9cm]{./Clustering/imagenes/kmedias.jpg}
+\caption{Ejemplo del algoritmo kmedias.}
+\label{imgkm}
+\end{figure}
+
+
+\subsubsection{DBSCAN}
+
+Este algoritmo es un método basado en densidad (criterio local), la idea principal de estos métodos reside en identificar regiones en el espacio del problema cuya densidad de muestras difiera notablemente de otras, identificando los grupos en función de estas regiones y diferencias. El algoritmo DBSCAN usa densidad basada en centros, donde estimaremos la densidad de una región contando el número de muestras que residen dentro de un radio fijado como parámetro y que se denomina \textit{eps}. Una vez fijado este parámetro, se centrará en obtener iterativamente \textbf{puntos núcleo}, (serán aquellos centrales a una región de gran densidad) y \textbf{puntos frontera} (aquellos que delimitan una región de alta densidad). Los pasos serían:
+
+\begin{enumerate}
+\item Se analiza punto por punto y se comprueba si para un valor de \textit{eps} ese punto es un punto núcleo. 
+\item Si el punto es núcleo se crea un grupo y se buscan otros núcleos alcanzables a partir de él. Si se localiza alguno, se fusionan los grupos.  
+\item Terminaremos cuando no se pueda añadir ya ningún punto a ningún grupo.
+\end{enumerate}
+
 
 \subsection{Jerárquicos}
 
-\subsection{Basados en densidad}
+La principal idea del agrupamiento jerárquico reside en una sucesión de particiones que se anidan una continuación de la otra, de manera que determinados ejemplos pertenecientes a una partición \textit{n} están totalmente incluidos en una partición \textit{n+1}. Este tipo de clusters, se representa mediante dendogramas (figura \ref{dendograma}) y no necesitan el parámetro \textit{k} que vimos en la sección anterior.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=9cm]{./Clustering/imagenes/dendograma.png}
+\caption{Ejemplo de dendograma y clusters asociados.}
+\label{dendograma}
+\end{figure}
+
+Los enfoques de agrupamiento jerárquico son en su mayoría aglomerativos, es decir, considerando que cada ítem representa un grupo, avanzan en altura agregando ítems entre si que formarán los grupos finales. Dos de las técnicas más famosas son el \textbf{enfoque basado en grafos} y el \textbf{algoritmo de Jhonson}. 
+
+\subsubsection{Enfoque basado en Grafos}
+
+Se considera cada ítem como vértice de un grafo a raíz del cual, por medio de conexión de vértices, se generan las particiones. Estas conexiones entre vértices pueden generarse de dos formas:
+
+\begin{enumerate}
+\item Enlace Simple: Obtendremos los grupos mediante la obtención de las componentes conexas del grafo. 
+\item Enlace Completo: Obtendremos los grupos, al identificar los subgrafos completamente conectados. 
+\end{enumerate}
+
+\subsubsection{Algoritmo de Jhonson}
+
+Este algoritmo se basa en la transformación de la matriz de distancia, que será reducida cada vez que el algoritmo consiga identificar un nuevo grupo. Este proceso es iterativo y se basa en distintas formas de calcular la proximidad entre grupos que pueden ser tales como, el mínimo, el máximo, la media de grupos o la distancia entre centroides. 
+
 
 \section{Validación}
+
+La validación, es uno de las etapas más delicadas en cualquier proceso de ciencia de datos, ya que con ella, podremos discernir si nuestros modelos se comportan adecuadamente y se amoldan a la realidad. Para más inri, en enfoques no supervisados como es el caso del clustering, donde no conocemos nada \textit{a priori} sobre la estructura de los datos, el proceso de validación puede suponer una ardua labor.  Pese a su dificultad en algunos casos, la validación de un proceso de agrupamiento es muy interesante ya que nos permitirá discernir entre agrupamientos y ruido o comparar técnicas de agrupamiento. 
+
+La evaluación de resultados podrá hacerse siguiendo dos criterios:
+
+\begin{enumerate}
+\item{Criterios Externos}: Se apoyan en información adicional, como es un conjunto de entrenamiento típico y una validación donde suprimimos el valor del cluster (clase).
+\item{Criterios Internos}: Se obtienen a partir de los propios datos, y responden preguntas como: ¿Qué valor de k usar?, cuya respuesta vendrá dada por el valor de la suma del error cuadrado, o ¿Cómo de buenos son mis cluster?, pregunta que hallará la respuesta en las medidas de \textbf{cohesión} y \textbf{separación}. 
+\end{enumerate}
 
 \section{Extensiones del Clustering}
 \label{extension}
