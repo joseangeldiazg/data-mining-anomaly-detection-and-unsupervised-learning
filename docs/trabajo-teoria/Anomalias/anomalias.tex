@@ -30,14 +30,78 @@ De esta pequeña introducción podríamos desgranar que la mayor dificultad en el p
 \section{Validación}
 \label{vali}
 
+La salida de un método de detección de anomalías puede ser si o no, dependiendo de si es o no es una anomalía. Acode a esta salida podremos construir con ayuda de un experto la matriz de confusión que podemos ver en la (Tabla \ref{tab:confusion}). 
+
+\begin{table}[H]
+	\begin{center}
+		\begin{tabular}{c|cc} \toprule
+		& \textit{Positive prediction} & \textit{Negative prediction }\\ \midrule
+		\textit{Positive class} & True positive (TP) & False Negative (FN)\\
+		\textit{Negative class} &  False Positive (FP) & True Negative (TN)\\ \bottomrule
+		\end{tabular}
+	\end{center}
+\caption{Matriz de confusión para dos clases.}
+\label{tab:confusion}
+\end{table}
+
+Esta matriz (Tabla \ref{tab:confusion}) almacena los ejemplos cuya clasificación se acierta y aquellos cuya clasificación es errónea. De estas medidas podemos obtener el \textbf{\textit{accuracy rate}} cuya formula podemos verla en la ecuación \ref{eq:accuracy}.
+	
+		\begin{equation} 
+		Acc=\frac{TP+TN}{TP+FN+TN+FP}
+		 \label{eq:accuracy}
+		 \end{equation}	
+
+Este método es uno de los métodos de evaluación más usado, aunque su comportamiento no es del todo apropiado con problemas no balanceados, como el caso de outliers, ya que no tiene en cuenta la distribución de los ejemplos de cada clase. Es por ello, que han surgido propuestas para evaluación que mejoran los resultados del \textit{accuracy rate}. Y que se basan en medidas que tienen en consideración el porcentaje de cada una de las muestras de las clases estudiadas frente a las demás lo que facilita y mejora el comportamiento de los métodos de evaluación frente a problemas con  representaciones de clase en clara minoría, como los outliers. Algunas de las medidas más extendidas son:
+
+\begin{itemize}
+	\item \textbf{\textit{True positive rate}}: Porcentaje de instancias positivas correctamente clasificadas. Este valor también es conocido como sensibilidad o recall y juega un papel muy importante en algunos de los métodos de evaluación que veremos al finalizar esta sección. 
+		\begin{equation} 
+		TPR=\frac{TP}{TP+FN}
+		 \label{eq:TPR}
+		 \end{equation}
+	
+	\item \textbf{\textit{True negative rate}}: Porcentaje de instancias negativas correctamente clasificadas. Este valor también se le conoce como especifidad, y al igual que el anterior tiene un papel relevante en métodos de evaluación que veremos en este capítulo. 
+		\begin{equation} 
+		TNR=\frac{TN}{TN+FP}
+		 \label{eq:TNR}
+		 \end{equation}
+
+	\item \textbf{\textit{False positive rate}}: Porcentaje de instancias positivas mal clasificadas.
+		
+		\begin{equation} 
+		FPR=\frac{FP}{FP+TN}
+		 \label{eq:FPR}
+		 \end{equation}
+
+	\item \textbf{\textit{False negative rate}}: Porcentaje de instancias negativas mal clasificadas.
+		
+		\begin{equation} 
+		FNR=\frac{FN}{TP+FN}
+		 \label{eq:FNR}
+		 \end{equation}
+		 
+	\item \textbf{\textit{Precisión}}: Es el ratio de todos los ejemplos que son realmente positivos, frente a todas las observaciones cuya predicción es positiva y  puede ser calculada fácilmente con los valores estudiados hasta el momento con la siguiente ecuación.
+	
+	        \begin{equation} 
+		precision=\frac{TP}{TP+FP}
+		 \label{eq:precision}
+		 \end{equation}	 
+		 
+	\item \textbf{\textit{F-measure}} \cite{fmeasure}: Se basa en una correlación de la sensibilidad o recall y la precisión.El cálculo del F-Measure es sencillo y  sofisticado al mismo tiempo ya que añade un valor \textit{x} que permite al usuario ponderar una parte u otra en función de diversos factores. Los valores típicos de \textit{x} suelen ser 0.5, 1 y 2 lo que significaría respectivamente doble peso para precisión, mismo peso para ambas y doble peso para el recall.
+
+		\begin{equation} 
+		F-Measure=(1+x)*\frac{precision*recall}{(x*precision)+recall}
+		 \label{eq:fscore}
+		 \end{equation}  
+\end{itemize}
 \section{Aplicaciones}
 \label{app}
 
 A lo largo de este capítulo hemos introducido y estudiado en cierta medida el concepto de anomalía y su proceso de detección, por tanto ahora estamos en posición de introducir algunas de sus aplicaciones y campos donde este proceso, toma especial relevancia, como podrían ser las siguientes:
 
 \begin{itemize}
-\item \textbf{Detección de intrusiones}: Siempre que un sistema esté conectado en red, corremos el riesgo de que un intruso acceda y realice acciones maliciosas. Actualmente se recuperan datos de los accesos y tráfico de red, a los que se aplican técnicas de detección de anomalías para detectar intrusos o comportamientos no comunes, para por ejemplo cerrar puertos tras su detección o bloquear ips maliciosas. 
-\item \textbf{Fraude en tarjetas de crédito}: La detección de anomalías se puede adaptar a este campo para detectar cuando el uso que se hace de una tarjeta de crédito no es real. Por ejemplo, no suelo pagar viajes con tarjeta y en un día realizo 3 compras de vuelos, a my seguro, mi banco detectaría este comportamiento anómalo y me lo notificaría. 
+\item \textbf{Detección de intrusiones}: Siempre que un sistema esté conectado en red, corremos el riesgo de que un intruso acceda y realice acciones maliciosas. Actualmente se recuperan datos de los accesos y tráfico de red, a los que se aplican técnicas de detección de anomalías para detectar intrusos o comportamientos no comunes, para por ejemplo cerrar puertos tras su detección o bloquear IPs maliciosas. 
+\item \textbf{Fraude en tarjetas de crédito}: La detección de anomalías se puede adaptar a este campo para detectar cuando el uso que se hace de una tarjeta de crédito no es real. Por ejemplo, no suelo pagar viajes con tarjeta y en un día realizo 3 compras de vuelos, a muy seguro, mi banco detectaría este comportamiento anómalo y me lo notificaría. 
 \item \textbf{Internet de las cosas}: En el mundo del internet de las cosas, el principal componente son los sensores, que en algunos casos generan ingentes cantidades de datos por segundo de los cuales solo en raras ocasiones merecerán atención. En detectar estos momentos, es donde se centra la detección de anomalías en este área. 
 \item \textbf{Ciencias de la naturaleza}: En lo que meteorología, climatología y estudios ecológicos respecta, el estudio de las anomalías se centra en revelar por ejemplo acciones humanas. Por ejemplo, la aparición de deforestación en imágenes por satélite donde debería haber árboles. 
 \end{itemize}
