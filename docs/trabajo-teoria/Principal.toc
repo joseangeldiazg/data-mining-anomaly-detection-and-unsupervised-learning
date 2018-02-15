@@ -25,10 +25,10 @@
 \contentsline {subsection}{\numberline {3.2.3}M\'etodos No Supervisados}{17}{subsection.3.2.3}
 \contentsline {section}{\numberline {3.3}Validaci\'on}{17}{section.3.3}
 \contentsline {section}{\numberline {3.4}Aplicaciones}{17}{section.3.4}
-\contentsline {chapter}{\numberline {4}Reglas de Asociaci\'on}{18}{chapter.4}
-\contentsline {section}{\numberline {4.1}Medidas Cl\'asicas}{19}{section.4.1}
-\contentsline {section}{\numberline {4.2}Obtenci\'on de reglas}{19}{section.4.2}
-\contentsline {section}{\numberline {4.3}Principales algoritmos}{20}{section.4.3}
-\contentsline {subsection}{\numberline {4.3.1}Apriori}{21}{subsection.4.3.1}
-\contentsline {subsection}{\numberline {4.3.2}Eclat}{22}{subsection.4.3.2}
-\contentsline {subsection}{\numberline {4.3.3}FP-Growth}{22}{subsection.4.3.3}
+\contentsline {chapter}{\numberline {4}Reglas de Asociaci\'on}{19}{chapter.4}
+\contentsline {section}{\numberline {4.1}Medidas Cl\'asicas}{20}{section.4.1}
+\contentsline {section}{\numberline {4.2}Obtenci\'on de reglas}{20}{section.4.2}
+\contentsline {section}{\numberline {4.3}Principales algoritmos}{21}{section.4.3}
+\contentsline {subsection}{\numberline {4.3.1}Apriori}{22}{subsection.4.3.1}
+\contentsline {subsection}{\numberline {4.3.2}Eclat}{23}{subsection.4.3.2}
+\contentsline {subsection}{\numberline {4.3.3}FP-Growth}{23}{subsection.4.3.3}
