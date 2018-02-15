@@ -1,12 +1,40 @@
 %---------------------------------------------------
-% Nombre: capitulo1.tex  
+% Nombre: anomalias.tex  
 % 
 % Texto del capitulo 1
 %---------------------------------------------------
 
 \chapter{Detección de anomalías}
 
+Aunque se suele estudiar dentro del campo del aprendizaje no supervisado, la detección de anomalías es un campo a caballo entre este y el aprendizaje supervisado, habiendo sido estudiada desde ambos enfoques  y con técnicas propias de cada uno de ellos en innumerables ocasiones. En este capítulo, se introducirá el concepto de anomalía y detección de las mismas (sección \ref{intro}), los métodos aplicados en su detección (sección \ref{metodos})  y se finalizará con puntualizando sus métodos de validación  (sección \ref{vali}) y  sus aplicaciones e implicaciones en problemas reales (sección \ref{app}). 
 
+\section{Introducción}
+\label{intro}
 
+Antes de comenzar a definir el proceso de la detección de anomalías, cabría la necesidad de preguntarnos, ¿Qué es una anomalía? Acorde con Aggarwal \cite{anomalias2}, un \textit{outlier} o anomalía podría definirse como un ejemplo cuyas características son significativamente diferentes del resto de los datos.  Localizar las anomalías será por tanto la meta final del proceso de detección de anomalías, teniendo en cuenta que estas  pueden estar debidas a dos motivos:
+
+\begin{enumerate}
+\item Errores: Son ejemplos que no pertenecen al dominio real del problema sino que se han debido a un error en la captura de los datos o incluso a procesos de pre-procesado previos al proceso de detección de anomalías. 
+\item Datos reales: Son datos que a diferencia del caso anterior no presentan error en su captura o procesado, pero en los que por una o varias de sus variables tienen valores que los convierten en anomalías. Estos datos, pueden llegar a ser muy interesantes y deben ser analizados de manera concienzuda. 
+\end{enumerate}
+
+De esta pequeña introducción podríamos desgranar que la mayor dificultad en el proceso de detección de anomalías está en que desconocemos por completo la naturaleza o dominio de lo que buscamos, por lo que el proceso es complicado, por lo que habrá ciertas ocasiones en las que podríamos prescindir del proceso de detección de anomalías como al usar arboles como el C4.5 o los métodos basados en reglas de asociación cuyos valores de soporte y confianza dejarán fuera del proceso de minería de datos a los outliers, sin tener que tratar estos previamente. Por otro lado, habrá otras ocasiones donde si que habrá que aplicar el proceso previo de detección de outliers, como al usar métodos de regresión, por naturaleza muy sensibles a las anomalías. Llegado por tanto el caso de necesitar la detección de anomalías, dispondremos de varias técnicas para dicha tarea, sobre la discusión de éstas será de lo que verse la siguiente sección. 
+
+\section{Métodos}
+\label{metodos}
+
+\subsection{Métodos Supervisados}
+\subsection{Métodos Semi-Supervisados}
+\subsection{Métodos No Supervisados}
+	
+\section{Validación}
+\label{vali}
+
+\section{Aplicaciones}
+\label{app}
+
+A lo largo de este capítulo hemos introducido y estudiado en cierta medida el concepto de anomalía y su proceso de detección, por tanto ahora estamos en posición de introducir algunas de sus aplicaciones y campos donde este proceso, toma especial relevancia. 
+
+Al igual que se hizo con el clustering, se ha investigado acerca de artículos recientes sobre la detección de anomalías con el fin de comprender e ilustrar aplicaciones actuales de la materia. 
 \clearpage
 %---------------------------------------------------
