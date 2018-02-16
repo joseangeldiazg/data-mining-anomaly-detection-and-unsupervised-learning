@@ -1,14 +1,20 @@
 %---------------------------------------------------
-% Nombre: capitulo1.tex  
+% Nombre: reglas.tex  
 % 
 % Texto del capitulo 1
 %---------------------------------------------------
 
 \chapter{Reglas de Asociación}
 
-La reglas de asociación dentro del ámbito de la informática no son muy distintas, al menos en el concepto general, de la búsqueda de relaciones en cualquier ámbito. Las reglas de asociación se enmarcan dentro del aprendizaje automático o minería de datos y no es algo nuevo sino que llevan siendo usadas y estudiadas desde mucho tiempo atrás, datando una de las primeras referencias a estas, del año 1993 \cite{agrawal}. Su utilidad es la de obtener conocimiento relevante de grandes bases de datos y se representan según la forma \textbf{X->Y} donde \textbf{X}, es un conjunto de items que representa el antecedente e \textbf{Y} un item consecuente, por ende, podemos concluir que los ítems \textbf{consecuentes}  guardan una relación de co-ocurrencia con los ítems \textbf{antecedentes}. Esta relación puede ser obvia en algunos casos, pero en otros necesitará del uso de algoritmos de extracción de reglas de asociación que podrán desvelar relaciones no triviales y que puedan ser de mucho valor.  Podremos presentar por tanto a las reglas de asociación, como un método de extracción de relaciones aparentemente ocultas entre ítems o elementos dentro de bases de datos transaccionales, \textit{datawarehouses} u otros tipos de almacenes de datos de los que es interesante extraer información de ayuda en el proceso de toma de decisiones de las organizaciones. 
+Las reglas de asociación han sido una de las técnicas más estudiadas en el campo de la minería de datos. En este capítulo, se verá el concepto de regla de asociación y su trasfondo (sección \ref{intro}), las medidas clásicas para su validación (sección \ref{validacion}), algunos de los principales algoritmos (sección \ref{algoritmos}) y finalizaremos estudiando algunas de sus aplicaciones (sección \ref{app}). 
+
+\section{Introducción}
+\label{intro}
+
+La reglas de asociación dentro del ámbito de la informática no son muy distintas, al menos en el concepto general, de la búsqueda de relaciones en cualquier ámbito. Las reglas de asociación se enmarcan dentro del aprendizaje automático o minería de datos y no es algo nuevo sino que llevan siendo usadas y estudiadas desde mucho tiempo atrás, datando una de las primeras referencias a estas, del año 1993 \cite{agrawal}. Su utilidad es la de obtener conocimiento relevante de grandes bases de datos y se representan según la forma \textbf{X->Y} donde \textbf{X}, es un conjunto de ítems que representa el antecedente e \textbf{Y} un ítem consecuente, por ende, podemos concluir que los ítems \textbf{consecuentes}  guardan una relación de co-ocurrencia con los ítems \textbf{antecedentes}. Esta relación puede ser obvia en algunos casos, pero en otros necesitará del uso de algoritmos de extracción de reglas de asociación que podrán desvelar relaciones no triviales y que puedan ser de mucho valor.  Podremos presentar por tanto a las reglas de asociación, como un método de extracción de relaciones aparentemente ocultas entre ítems o elementos dentro de bases de datos transaccionales, \textit{datawarehouses} u otros tipos de almacenes de datos de los que es interesante extraer información de ayuda en el proceso de toma de decisiones de las organizaciones. 
 
 \section{Medidas Clásicas}
+\label{validacion}
 
 La forma clásica de medir la bondad o ajuste de las reglas de asociación a un determinado problema, vendrá dada por las medidas del soporte, la confianza y el lift, que podremos definir de la siguiente manera:
 \begin{itemize}
@@ -27,11 +33,11 @@ La forma clásica de medir la bondad o ajuste de las reglas de asociación a un de
 	\end{equation}
 \end{itemize}
 
-Pese a que estas medidas son las más comunes y extendidas, hay innumerables propuestas de medias complementarias en la literatura, tales como la \textbf{ convicción, factor de certeza, diferencia absoluta de confianza} entre otras muchas. 
+Pese a que estas medidas son las más comunes y extendidas, hay innumerables propuestas de medias complementarias en la literatura, tales como la \textbf{convicción, factor de certeza, diferencia absoluta de confianza} entre otras muchas. 
 
 \section{Obtención de reglas}
 
-Si nos centramos en la manera de obtener las reglas, estas pueden abordarse desde dos perspectivas, solución por fuerza bruta (prohibitivo) o desde un enfoque basado en dos etapas. La primera de estas etapas es la generación de itemsets frecuentes, a partir de los cuales, en la segunda etapa se obtienen las reglas de asociación, que tendrán si todo ha ido correctamente un valor de confianza aceptable o elevado. La primera etapa de obtención de itemsets frecuentes puede conllevar problemas de memoria ya que en una base de datos con muchos items o transacciones el número de estos será muy elevado, es por ello que surgen aproximaciones en el proceso de representación de itemsets frecuentes que nos permitirán obtener estos en bases de datos de gran tamaño. Estas aproximaciones son:
+Si nos centramos en la manera de obtener las reglas, estas pueden abordarse desde dos perspectivas, solución por fuerza bruta (prohibitivo) o desde un enfoque basado en dos etapas. La primera de estas etapas es la generación de itemsets frecuentes, a partir de los cuales, en la segunda etapa se obtienen las reglas de asociación, que tendrán si todo ha ido correctamente un valor de confianza aceptable o elevado. La primera etapa de obtención de itemsets frecuentes puede conllevar problemas de memoria ya que en una base de datos con muchos ítems o transacciones el número de estos será muy elevado, es por ello que surgen aproximaciones en el proceso de representación de itemsets frecuentes que nos permitirán obtener estos en bases de datos de gran tamaño. Estas aproximaciones son:
 
 \begin{itemize}
 \item Itemsets maximales: Son aquellos itemsets frecuentes para los que ninguno de los superconjuntos inmediatos al itemsets en cuestión, son frecuentes. A partir de estos podremos recuperar todos los itemsets frecuentes de manera sencilla sin tener que mantenerlos todos en memoria. 
@@ -41,7 +47,7 @@ Si nos centramos en la manera de obtener las reglas, estas pueden abordarse desd
 En resumen usaremos itemsets cerrados cuando la eficiencia sea un factor a tener en cuenta o prohibitivo, frente al tamaño de la base de datos. Si estuviéramos en el caso contrario, los itemsets maximales serán nuestra opción ganadora al ser más compactos. Sea como sea, una vez obtenidos los itemsets frecuentes podemos centrarnos en la obtención de las reglas para ello, se crean tordas las posibles combinaciones de regla con el itemset y se seleccionan solo aquellas que superen el umbral de confianza definido por el experto del problema en cuestión. 
 
 \section{Principales algoritmos}
-
+\label{algoritmos}
 En esta sección veremos una introducción a los principales algoritmos empleados en problemas de obtención de reglas de asociación.
 
 \subsection{Apriori}
@@ -59,9 +65,7 @@ Apriori tiene bastantes factores o limitaciones relacionados con la eficiencia d
 
 
 \subsection{Eclat}
-
-
-
+El algoritmo Eclat \cite{eclat}, se basa en una estructura de datos denominada tid-list, que será generada para cada ítem en la base de datos y que almacena los id de las distintas transacciones de la base de datos que contienen al ítem en cuestión. Este enfoque nos permite obtener el soporte de un k-ítemset de manera muy rápida realizando la intersección de sus subconjuntos. Por otro lado, mantener estas estructuras en memoria, puede llegar a ser imposible si la base de datos contiene muchas transacciones. 
 
 Las limitaciones de los algoritmos tradicionales han llevado a el estudio de otros método menos sensibles a los requisitos temporales o de espacio, de cara a poder aplicar estas técnicas a mayores cantidades de datos aún. Este método es el algoritmo FP-Growth y lo estudiaremos en el siguiente punto.
 
@@ -72,7 +76,7 @@ El algoritmo \textbf{FP-Growth} \cite{fpg} fue propuesto en el año 2000, como un
 \textbf{FP-Growth}, crea un modelo comprimido de la base datos original utilizando una estructura de datos que denomina como \textbf{\textit{FP-tree}} que está formada por dos elementos esenciales:
 
 \begin{itemize}
-\item Grafo de transacciones: Gracias a este grafo la base de datos completa puede abreviarse. En cada nodo, se describe un itemsets y su soporte que se calcula siguiendo el camino que va desde la raiz hasta el nodo en cuestión.
+\item Grafo de transacciones: Gracias a este grafo la base de datos completa puede abreviarse. En cada nodo, se describe un itemsets y su soporte que se calcula siguiendo el camino que va desde la raíz hasta el nodo en cuestión.
 \item Tabla cabecera: Es una tabla de listas de ítems. Es decir, para cada ítem, se crea una lista que enlaza nodos del grafo donde aparece. 
 \end{itemize}
 
@@ -85,6 +89,14 @@ Una vez se construye el árbol, utilizando un enfoque recursivo basado en divide 
 \end{enumerate}
 
 En función a lo estudiado, es obvio ver que la memoria que ocupa es mucho menor que la generada por Apriori, así como al generar itemsets por medio del principio divide y vencerás, \textbf{FP-Growth} se presta a ser usado en entornos distribuidos como por ejemplo el entorno de Big Data, Apache Spark, aumentando sus prestaciones de manera notable. 
+
+
+\section{Aplicaciones}
+\label{app}
+
+Las reglas de asociación son muy conocidas por sus aplicaciones en problemas como, el del análisis de la `cesta de la compra'. Si bien, es verdad que esta puede ser su aplicación más extendida, las reglas de asociación tienen infinitud de aplicaciones en campos tan dispares como la obtención de información a partir de los datos recopilados por aerogeneradores, datos bancarios o logísticos. Dentro de la propia ciencia de datos, las reglas de asociación pueden usarse para extender otras vertientes, como el de la minería social o la minería de textos donde se usan para asociar la presencia de términos en ciertos documentos. 
+
+Al igual que se hizo en los capítulos anteriores de clustering  y detección de anomalías, se han recopilado algunos artículos científicos recientes que tratan sobre reglas de asociación, para ilustrar ejemplos reales de aplicación de las mismas. El primer estudio es propuesto por Hu y Guo \cite{pollutants}, donde usan un enfoque basado en reglas de asociación para la obtención de información relevante sobre el estado de la polución en el centro urbano de la ciudad de Lan-Xi-Yin. El segundo trabajo, es propuesto por Zhong \cite{basket} y está enfocado al ámbito del deporte donde por medio del algoritmo apriori, se analizan técnicas y tácticas en el baloncesto. 
 
 
 \clearpage

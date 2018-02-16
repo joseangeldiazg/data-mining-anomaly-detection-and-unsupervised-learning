@@ -6,7 +6,7 @@
 
 \chapter{Detección de anomalías}
 
-Aunque se suele estudiar dentro del campo del aprendizaje no supervisado, la detección de anomalías es un campo a caballo entre este y el aprendizaje supervisado, habiendo sido estudiada desde ambos enfoques  y con técnicas propias de cada uno de ellos en innumerables ocasiones. En este capítulo, se introducirá el concepto de anomalía y detección de las mismas (sección \ref{intro}), los métodos aplicados en su detección (sección \ref{metodos})  y se finalizará con puntualizando sus métodos de validación  (sección \ref{vali}) y  sus aplicaciones e implicaciones en problemas reales (sección \ref{app}). 
+Aunque se suele estudiar dentro del campo del aprendizaje no supervisado, la detección de anomalías es un campo a caballo entre este y el aprendizaje supervisado, habiendo sido estudiada desde ambos enfoques  y con técnicas propias de cada uno de ellos en innumerables ocasiones. En este capítulo, se introducirá el concepto de anomalía y detección de las mismas (sección \ref{intro}), los métodos aplicados en su detección (sección \ref{metodos})  y se finalizará  puntualizando sus métodos de validación  (sección \ref{vali}) y  sus aplicaciones e implicaciones en problemas reales (sección \ref{app}). 
 
 \section{Introducción}
 \label{intro}
@@ -22,8 +22,20 @@ De esta pequeña introducción podríamos desgranar que la mayor dificultad en el p
 
 \section{Métodos}
 \label{metodos}
-
+En esta sección trataremos sobre los distintos enfoques desde los que puede ser estudiada la detección de anomalías.
 \subsection{Métodos Supervisados}
+
+Estos métodos se basan en la construcción de un modelo de clasificación, basado en un conjunto de datos de entrenamiento donde tenemos anomalías etiquetadas como tal. Debemos tener en cuenta que la proporción de muestras que correspondan a una anomalía en relación con las muestras que no lo son, estarán en una gran minoría por lo que estaremos ante un problema de clases no balanceadas. Estos problemas son muy delicados y podrán afrontarse desde dos enfoques, según si nos centramos en las instancias o en el algoritmo.
+
+\subsubsection{Métodos basados en instancia}
+
+Estos métodos mutan los datos antes de aplicar la clasificación. Generalmente, se centran en aumentar las muestras de la clase minoritaria (oversampling) o disminuir las de la clase mayoritaria (undersampling).
+
+
+
+\subsubsection{Métodos basados en algoritmos}
+ Estos métodos mantienen el conjunto de datos de entradas inamovible y se centran en mejorar el proceso de entrenamiento mediante el uso de pesos.
+
 \subsection{Métodos Semi-Supervisados}
 \subsection{Métodos No Supervisados}
 	
