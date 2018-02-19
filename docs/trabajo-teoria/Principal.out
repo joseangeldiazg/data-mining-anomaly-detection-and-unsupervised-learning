@@ -22,10 +22,11 @@
 \BOOKMARK [1][-]{section.3.4}{Aplicaciones}{chapter.3}% 22
 \BOOKMARK [0][-]{chapter.4}{Reglas de Asociaci\363n}{}% 23
 \BOOKMARK [1][-]{section.4.1}{Introducci\363n}{chapter.4}% 24
-\BOOKMARK [1][-]{section.4.2}{Medidas Cl\341sicas}{chapter.4}% 25
+\BOOKMARK [1][-]{section.4.2}{Validaci\363n}{chapter.4}% 25
 \BOOKMARK [1][-]{section.4.3}{Obtenci\363n de reglas}{chapter.4}% 26
 \BOOKMARK [1][-]{section.4.4}{Principales algoritmos}{chapter.4}% 27
 \BOOKMARK [2][-]{subsection.4.4.1}{Apriori}{section.4.4}% 28
 \BOOKMARK [2][-]{subsection.4.4.2}{Eclat}{section.4.4}% 29
 \BOOKMARK [2][-]{subsection.4.4.3}{FP-Growth}{section.4.4}% 30
-\BOOKMARK [1][-]{section.4.5}{Aplicaciones}{chapter.4}% 31
+\BOOKMARK [1][-]{section.4.5}{Aspectos Avanzados}{chapter.4}% 31
+\BOOKMARK [1][-]{section.4.6}{Aplicaciones}{chapter.4}% 32

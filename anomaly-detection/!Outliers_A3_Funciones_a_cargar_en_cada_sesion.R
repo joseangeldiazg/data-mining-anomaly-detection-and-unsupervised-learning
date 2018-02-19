@@ -28,8 +28,6 @@ MiPlot_Univariate_Outliers = function (datos, indices_de_Outliers, titulo){
   cat("\n?Qui?n es outlier?: ")
   cat(vectorTFoutliers)
   cat('\n')
-  
-  X11()
   plot(datos, col=vector.colores.outlier, main = titulo)
 }
 
@@ -118,7 +116,6 @@ MiBoxPlot_IQR_Univariate_Outliers = function (datos, indice.de.columna, coef = 1
     geom_boxplot(outlier.colour = "red") + 
     geom_text(aes(label = nombres.de.filas)) #, position = position_jitter(width = 0.1))   
   
-  X11()
   ggboxplot
 }
 
@@ -238,8 +235,6 @@ MiBiPlot_Multivariate_Outliers = function (datos, vectorTFoutliers, titulo){
    biplot = biplot + scale_color_manual(values = c("black","red"))
    biplot = biplot + geom_text(label = identificadores_de_datos, stat = "identity", size = 3, hjust=0, vjust=0)
    biplot = biplot + ggtitle(titulo)
-  
-   X11()
    print(biplot)
 }
 
@@ -270,7 +265,6 @@ MiBiPlot_Clustering_Outliers = function (datos, titulo){
     ggtitle(titulo) +
     geom_text(label = identificadores_de_datos, stat = "identity", size = 3, hjust=0, vjust=0)      
   
-  X11()
   print(biplot)
 }
 

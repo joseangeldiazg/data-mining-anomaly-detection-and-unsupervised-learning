@@ -29,10 +29,11 @@
 \contentsline {section}{\numberline {3.4}Aplicaciones}{20}{section.3.4}
 \contentsline {chapter}{\numberline {4}Reglas de Asociaci\'on}{22}{chapter.4}
 \contentsline {section}{\numberline {4.1}Introducci\'on}{22}{section.4.1}
-\contentsline {section}{\numberline {4.2}Medidas Cl\'asicas}{23}{section.4.2}
+\contentsline {section}{\numberline {4.2}Validaci\'on}{23}{section.4.2}
 \contentsline {section}{\numberline {4.3}Obtenci\'on de reglas}{24}{section.4.3}
 \contentsline {section}{\numberline {4.4}Principales algoritmos}{25}{section.4.4}
 \contentsline {subsection}{\numberline {4.4.1}Apriori}{25}{subsection.4.4.1}
 \contentsline {subsection}{\numberline {4.4.2}Eclat}{26}{subsection.4.4.2}
-\contentsline {subsection}{\numberline {4.4.3}FP-Growth}{26}{subsection.4.4.3}
-\contentsline {section}{\numberline {4.5}Aplicaciones}{27}{section.4.5}
+\contentsline {subsection}{\numberline {4.4.3}FP-Growth}{27}{subsection.4.4.3}
+\contentsline {section}{\numberline {4.5}Aspectos Avanzados}{28}{section.4.5}
+\contentsline {section}{\numberline {4.6}Aplicaciones}{28}{section.4.6}

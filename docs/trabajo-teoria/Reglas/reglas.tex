@@ -13,7 +13,7 @@ Las reglas de asociación han sido una de las técnicas más estudiadas en el campo
 
 La reglas de asociación dentro del ámbito de la informática no son muy distintas, al menos en el concepto general, de la búsqueda de relaciones en cualquier ámbito. Las reglas de asociación se enmarcan dentro del aprendizaje automático o minería de datos y no es algo nuevo sino que llevan siendo usadas y estudiadas desde mucho tiempo atrás, datando una de las primeras referencias a estas, del año 1993 \cite{agrawal}. Su utilidad es la de obtener conocimiento relevante de grandes bases de datos y se representan según la forma \textbf{X->Y} donde \textbf{X}, es un conjunto de ítems que representa el antecedente e \textbf{Y} un ítem consecuente, por ende, podemos concluir que los ítems \textbf{consecuentes}  guardan una relación de co-ocurrencia con los ítems \textbf{antecedentes}. Esta relación puede ser obvia en algunos casos, pero en otros necesitará del uso de algoritmos de extracción de reglas de asociación que podrán desvelar relaciones no triviales y que puedan ser de mucho valor.  Podremos presentar por tanto a las reglas de asociación, como un método de extracción de relaciones aparentemente ocultas entre ítems o elementos dentro de bases de datos transaccionales, \textit{datawarehouses} u otros tipos de almacenes de datos de los que es interesante extraer información de ayuda en el proceso de toma de decisiones de las organizaciones. 
 
-\section{Medidas Clásicas}
+\section{Validación}
 \label{validacion}
 
 La forma clásica de medir la bondad o ajuste de las reglas de asociación a un determinado problema, vendrá dada por las medidas del soporte, la confianza y el lift, que podremos definir de la siguiente manera:
@@ -33,7 +33,14 @@ La forma clásica de medir la bondad o ajuste de las reglas de asociación a un de
 	\end{equation}
 \end{itemize}
 
-Pese a que estas medidas son las más comunes y extendidas, hay innumerables propuestas de medias complementarias en la literatura, tales como la \textbf{convicción, factor de certeza, diferencia absoluta de confianza} entre otras muchas. 
+Pese a que estas medidas son las más comunes y extendidas, hay innumerables propuestas de medias complementarias en la literatura, tales como la \textbf{convicción, factor de certeza, diferencia absoluta de confianza} entre otras muchas (figura \ref{medidas}).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=13cm]{./Reglas/imagenes/medidas.jpg}
+\caption{Distintas medidas aplicables a reglas de asociación.}
+\label{medidas}
+\end{figure} 
 
 \section{Obtención de reglas}
 
@@ -90,6 +97,17 @@ Una vez se construye el árbol, utilizando un enfoque recursivo basado en divide 
 
 En función a lo estudiado, es obvio ver que la memoria que ocupa es mucho menor que la generada por Apriori, así como al generar itemsets por medio del principio divide y vencerás, \textbf{FP-Growth} se presta a ser usado en entornos distribuidos como por ejemplo el entorno de Big Data, Apache Spark, aumentando sus prestaciones de manera notable. 
 
+\section{Aspectos Avanzados}
+
+Las reglas ed asociación, como casi la práctica totalidad de las tecnologías  o técnicas informáticas, están en constante evolución, de ahí que se propongan nuevas variaciones de la técnica con el fin de 
+
+\subsection{Interpretación}
+
+\subsection{Reglas de asociación difusas}
+
+\subsection{Análisis de reglas por grupos}
+
+Pese a que el análisis de reglas de asociación se suele realizar de manera individual, hay diversos enfoques que proponen que un análisis en conjunto de las reglas dirigido en función de algun criterio o medidas
 
 \section{Aplicaciones}
 \label{app}

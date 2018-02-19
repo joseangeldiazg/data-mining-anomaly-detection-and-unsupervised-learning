@@ -1,0 +1,259 @@
+---
+title: "Detección de Anomalías"
+author: "joseangeldiazg"
+date: "19/2/2018"
+output: pdf_document
+---
+## Datos
+
+Vamos a trabajar con el dataset Seismic, que contiene informacion sobre medidas sísmicas. Trata de detectar el peligro sismico en función de ciertas característcas de medida y registros. Sus datos, en inglés, son:
+
+Attribute information:
+
+- 1. seismic: result of shift seismic hazard assessment in the mine working obtained by the seismic method (a - lack of hazard, b - low hazard, c - high hazard, d - danger state); 
+- 2. seismoacoustic: result of shift seismic hazard assessment in the mine working obtained by the  seismoacoustic method; 
+- 3. shift: information about type of a shift (W - coal-getting, N -preparation shift); 
+- 4. genergy: seismic energy recorded within previous shift by the most active geophone (GMax) out of geophones monitoring the longwall; 
+- 5. gpuls: a number of pulses recorded within previous shift by GMax; 
+- 6. gdenergy: a deviation of energy recorded within previous shift by GMax from average energy recordedduring eight previous shifts; 
+- 7. gdpuls: a deviation of a number of pulses recorded within previous shift by GMax from average number of pulses recorded during eight previous shifts; 
+- 8. ghazard: result of shift seismic hazard assessment in the mine working obtained by the  seismoacoustic method based on registration coming form GMax only; - 9. nbumps: the number of seismic bumps recorded within previous shift; 
+- 10. nbumps2: the number of seismic bumps (in energy range [10^2,10^3)) registered within previous shift; 
+- 11. nbumps3: the number of seismic bumps (in energy range [10^3,10^4)) registered within previous shift; 
+- 12. nbumps4: the number of seismic bumps (in energy range [10^4,10^5)) registered within previous shift; 
+- 13. nbumps5: the number of seismic bumps (in energy range [10^5,10^6)) registered within the last shift; 
+- 14. nbumps6: the number of seismic bumps (in energy range [10^6,10^7)) registered within previous shift; 
+- 15. nbumps7: the number of seismic bumps (in energy range [10^7,10^8)) registered within previous shift; 
+- 16. nbumps89: the number of seismic bumps (in energy range [10^8,10^10)) registered within previous shift; 
+- 17. energy: total energy of seismic bumps registered within previous shift; 
+- 18. maxenergy: the maximum energy of the seismic bumps registered within previous shift; 
+- 19. class: the decision attribute - '1' means that high energy seismic bump occurred in the next shift('hazardous state'), '0' means that no high energy seismic bumps occurred in the next shift ('non-hazardous state').
+
+
+Los datos han sido recopilados del repositorio UCI y vienen en formato arrf. 
+
+```{r}
+library(foreign)
+seismic<-read.arff("data/seismic-bumps.arff")
+head(seismic,5)
+str(seismic)
+```
+
+Para este análisis nos querdaremos con las variables numéricas, eliminando todas las demas de nuestros datos. Dado el caracter de las funciones que usaremos, ademas tendremos que definir un indice de columna y un nomre para los gráficos. 
+
+```{r}
+mydata.numeric  = seismic[,-c(1,2,3,8,19)]
+indice.columna  = 1
+nombre.mydata   = "seismic"
+head(mydata.numeric,5)
+```
+
+Por último para facilitar tambien procesos posteriores obtemeos los datos escalados:
+
+```{r}
+mydata.numeric.scaled<-scale(mydata.numeric)
+columna<-mydata.numeric[indice.columna]
+nombre.columna<-names(columna)
+columna.scaled<-mydata.numeric.scaled[,nombre.columna]
+```
+
+# Análisis estadístico de Outliers en una variable mediante IQR 
+
+En esta primera parte se obtendrán los outliers de manera manual sin utilizar funciones. Para obtener estos, usaremos el IQR,  o lo que es lo mismo la distancia intercuartil, es decir, necesitaremos obtener el primer cuartil, el tercer cuartil y la diferencia entre ambos. 
+
+```{r}
+cuartil.primero<-quantile(columna.scaled,0.25)
+cuartil.primero
+cuartil.tercero<-quantile(columna.scaled,0.75)
+cuartil.tercero
+iqr<-IQR(columna.scaled)
+iqr
+```
+
+
+Ahora debemos obtener los límites normales y extremops, que se calcularán de la siguiente manera:
+
+* extremo.superior.outlier.normal  = cuartil tercero + 1.5 IQR
+* extremo.inferior.outlier.normal  = cuartil primero - 1.5 IQR
+* extremo.superior.outlier.extremo = cuartil tercero + 3 IQR
+* extremo.inferior.outlier.extremo = cuartil primero - 3 IQR
+
+```{r}
+extremo.superior.outlier.normal<-cuartil.tercero+1.5*iqr
+extremo.inferior.outlier.normal<-cuartil.primero-1.5*iqr
+extremo.superior.outlier.extremo<-cuartil.tercero+3*iqr
+extremo.inferior.outlier.extremo<-cuartil.primero-3*iqr
+```
+
+Una vez tenemos todas estas variables, deberemos estudiar si hay outliers comparando la columna con el valor minimo y maximo de outliers normales y extremos. 
+
+Calculamos los **outliers normales**:
+
+```{r}
+vector.es.outlier.normal<-columna.scaled>extremo.superior.outlier.normal | columna.scaled<extremo.inferior.outlier.normal 
+```
+
+Calculamos los **outliers extremos**:
+
+```{r}
+vector.es.outlier.extremo<-columna.scaled>extremo.superior.outlier.extremo | columna.scaled<extremo.inferior.outlier.extremo
+```
+
+En base a los resultados obtenidos parece que estamos ante un problema con bastantes outliers, y dado que estos provienen de sensores sismicos, el problema es a la par complejo e interesante porque a muy seguro estos outliers, valores que se salen del las tablas por decirlo de alguna manera, indicarán o podrán indicar un riesgo de terremoto alto. Vamos a analizar estos outliers.
+
+## Índices y valores de los outliers
+
+Vamos a obtener los indices de los outliers, para posteriormente mostrar todos sus datos. 
+
+Para los normales:
+
+```{r}
+claves.outiers.normales<-which(vector.es.outlier.normal)
+claves.outiers.normales
+data.frame.outliers.normales<-data.frame(mydata.numeric[claves.outiers.normales,])
+data.frame.outliers.normales
+nombres.outliers.normales <- row.names(data.frame.outliers.normales)
+nombres.outliers.normales 
+valores.outliers.normales <- mydata.numeric[claves.outiers.normales,indice.columna]
+valores.outliers.normales
+```
+
+Para los extremos:
+
+```{r}
+claves.outiers.extremo<-which(vector.es.outlier.extremo)
+claves.outiers.extremo
+data.frame.outliers.extremo<-data.frame(mydata.numeric[claves.outiers.extremo,])
+data.frame.outliers.extremo
+nombres.outliers.extremo <- row.names(data.frame.outliers.extremo)
+nombres.outliers.extremo 
+valores.outliers.extremo <- mydata.numeric[claves.outiers.extremo,indice.columna]
+valores.outliers.extremo
+```
+
+Tenemos un total de 257 outliers extremos y 334 outliers normales, y esto solo en la variable genergy por lo que a muy probablemente el número de outliers aumente. 
+
+## Desviación de los outliers con respecto a la media de la columna
+
+Por último, obtendremos los valores de los outliers pero para la columna normalizada. 
+
+```{r}
+valores.normalizados.outliers.normales<-columna.scaled[claves.outiers.normales]
+valores.normalizados.outliers.extremo<-columna.scaled[claves.outiers.extremo]
+```
+
+
+## Plot
+
+Por último usaremos un gráfico para ver estos outliers para ello, llamamos a la siguiente función: 
+
+*MiPlot_Univariate_Outliers (columna de datos, indices -claves numéricas- de outliers , nombre de columna)*
+
+```{r}
+MiPlot_Univariate_Outliers(columna,claves.outiers.normales,nombre.columna)
+MiPlot_Univariate_Outliers(columna,claves.outiers.extremo,nombre.columna)
+```
+
+Podemos ver que los outliers son muy abundantes y serán outliers por encima, esto era de esperar ya que al tratarse de datos físicos lo normal en muchos casos más al tratarse de energia son valores constantes o que varían muy poco, excepto cuando como en este caso se de el caso de una gran cantidad de energia liberada, con la que obtendremos outliers por encima. 
+
+
+## BoxPlot
+
+Vamos a utilizar un boxplot para ver estos outliers, para ello usarmeos la función:
+
+*MiBoxPlot_IQR_Univariate_Outliers = function (datos, indice.de.columna, coef = 1.5)*
+
+```{r}
+MiBoxPlot_IQR_Univariate_Outliers(mydata.numeric.scaled,indice.columna, coef = 1.5)
+```
+
+
+Al representar encima los valores o nombres de los outliers el gráfico se emborrona, por lo que podremos usar boxplot nativo sobre todos los datos para ver mejor estos outliers:
+
+
+```{r}
+boxplot(mydata.numeric.scaled)
+```
+
+Vemos que la presencia de outliers es muy fuerte en todo el dataset, y como predejimos, estos vienen dados por encima en la mayoria de los casos teniendo medianas muy bajas y constantes lo que indica la estabilidad de los datos durante todas las medidas.
+
+
+## Cómputo de los outliers IQR con funciones propias
+
+En este punto realizaremos el estudio IQR de los datos, pero usando funciones propias:
+
+```{r}
+vector_outliers<-vector_es_outlier_IQR(mydata.numeric, indice.columna)
+vector_claves_outliers<-vector_claves_outliers_IQR(mydata.numeric, indice.columna)
+```
+
+## Trabajamos con varias columnas simultáneamente
+
+Lo interesante de usar estas funciones, reside en la obtención de los outliers en las distintas columnas. Aunque el análisis es aún centrandonos en una sola variable, podremos vamos a obtener todos los outliers usando la función:
+
+*vector_claves_outliers_IQR_en_alguna_columna = function(datos, coef = 1.5)*
+
+
+```{r}
+indices.de.outliers.en.alguna.columna<-vector_claves_outliers_IQR_en_alguna_columna(mydata.numeric)
+```
+
+Esta variable contiene los índices de aquellos registros que tienen un valor anómalo con respecto a alguna columna. Si mostramos los datos normalizados de dichos registros, debe salir lo siguiente:
+
+
+```{r}
+mydata.numeric[indices.de.outliers.en.alguna.columna,]
+```
+
+Estamos ante un data set con muchos outliers (+75%), tantos que tendremos que buscar una manera de condensar estos de manera que podamos estudiarlos, ya que los datos son tan dispares y en cierta medida complejos que no podrán obtenerse conclusiones lógicas con tan solo observarlos. 
+
+
+## Ampliación
+
+Realizaremos el estudio anterior, pero solo utilizando ordenes básicas de R, es decir, sin recurrir a la función usada anteriormente. 
+
+
+### Índices y valores de los outliers
+
+
+Obtendremos por tanto, para cada columna un vector lógico que nos indique si estamos ante un outlier o no y guardamos todo en una matriz. 
+
+```{r}
+frame.es.outlier <- sapply(1:ncol(mydata.numeric),vector_es_outlier_IQR, datos=mydata.numeric) 
+
+head(frame.es.outlier)
+```
+
+Ahora obtendremos el número total de outliers por columna:
+help(sapply)
+
+```{r}
+numero.total.outliers.por.columna <- apply(frame.es.outlier, 2, sum)
+numero.total.outliers.por.columna
+```
+
+Como hemos dicho anteriormente, podemos comprobar que el número de *univariate outliers* en el problema es muy elevado y excepto den dos columnas, los tenemos presentes en todas. 
+
+Con el fin de obtener los datos con los outliers, obtendremos ahora las claves de las filas que en alguna de sus columnas tienen outliers. 
+
+```{r}
+indices.de.outliers.en.alguna.columna<- sapply(1:ncol(mydata.numeric),vector_claves_outliers_IQR, datos=mydata.numeric) 
+indices.de.outliers.en.alguna.columna <- sort(unique(unlist(indices.de.outliers.en.alguna.columna)))
+```
+
+### Desviación de los outliers con respecto a la media de la columna
+
+```{r}
+mydata.numeric[indices.de.outliers.en.alguna.columna,]
+```
+
+
+### BoxPlot
+
+Por último utilizamos boxplot para obtener el gráfico con los outliers:
+
+```{r}
+boxplot(mydata.numeric)
+```
+
+Dado el gran volumen de datos no usaremos la función que los representa con etiquetas ya que de ser así estos se verían representados como una mancha, dado el gran volumen de outliers. 
