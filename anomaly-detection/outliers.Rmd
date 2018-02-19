@@ -256,4 +256,159 @@ Por último utilizamos boxplot para obtener el gráfico con los outliers:
 boxplot(mydata.numeric)
 ```
 
+
 Dado el gran volumen de datos no usaremos la función que los representa con etiquetas ya que de ser así estos se verían representados como una mancha, dado el gran volumen de outliers. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#Análisis de outliers en varias variables 
+
+Los outliers, podrán ser denominados como tal como resultado de la aparición de valores anómalos en una o varias de sus variables. En este estudio, obtendremos los valores de estos en como resultados de combinaciones de variables utilizando distribuciones normales. 
+
+Los datos que usaremos, son los mismos que en el anterior apartado, pero solo nos quedaremos con algunas de las variables ya que en pasos anteriores podremos usar como máximo 10 variables, para mejorar esto, eliminaremos aquellas variables muy correlacionadas, algo que podría influir tambien en la obtención de outliers multivariable. Eliminaremos de primeras las variables nbumps6, nbumps7, nbumps89, ya  que siempre tienen valor 0 y no aportan nada. 
+
+
+```{r}
+library(corrplot)
+M <- cor(seismic[,-c(1,2,3,8,14,15,16,19)])
+corrplot(M, method = "circle")
+str(seismic)
+```
+
+
+Podemos ver por tanto que enery y maxenergy tienen correlación de 1 prácticamente, por lo que nos quedaremos solo con energy. Tambien podremos eliminar. También eliminaremos genergy, gdenergy, nbums5 y nbums2 y 1 ya que nbums 3 será alto si las anteriores lo han sido.
+
+
+```{r}
+mydata.numeric <- seismic[,-c(1,2,3,4,6,8,10,11,12,13,16,15,14,18,19)]
+mydata.numeric.scaled <- scale(mydata.numeric)
+```
+
+## Paquete mvoutlier
+
+En esta sección, usaremos el paquete mvoutlier.
+
+### Obtención de los outliers multivariantes
+
+Utilizaremos el paquete mvoutlier para la obtención de los outliers que son considerados como tal por la combinacion de varias de sus variables. Estos outliers son obtenidos por medio de la distancia de Mahalanobis, por lo que podremos usar los datos sin normalizar ya que esta medida es muy robusta a la escala. 
+
+Declaramos los parámetros de entradas y una semilla para poder reproducir resultados. 
+
+
+```{r}
+alpha.value = 0.05
+alpha.value.penalizado = 1 - ( 1 - alpha.value) ^ (1 / nrow(mydata.numeric))   
+set.seed(12)  
+```
+
+
+Analizaremos los outliers provocados entre las variables gpuls y pgpuls, ya que si añadimos las demás variables uniplot no es capaz de obtener los resultados debido a la singularidad de la matriz que forma para sus cálculos. 
+
+```{r}
+mvoutlier.plot<-suppressWarnings(uni.plot(mydata.numeric[,c(1,2)], symb=FALSE, alpha = alpha.value.penalizado))
+```
+
+
+Si analizamos el gráfico podemos ver en rojo los outliers y en verde los ejemplos que no son outliers. Los datos interesantes en este caso, son aquellos, que no son outliers por sus valores altos, sino los que están situados en valores "normales" ya que estos serán outliers por combinaciones de varias de estas variables. 
+
+
+### Análisis de los outliers
+
+
+El gráfico anterior nos da una idea global de las anomalías en nuestro problema, pero será mucho más interesante obtener los ejemplos que representan a los datos en rojo (outliers). Para ello accedemos a los outliers del objeto mvoutlier.plot. 
+
+
+```{r}
+is.MCD.outlier <-mvoutlier.plot$outliers
+numero.de.outliers.MCD<-sum(is.MCD.outlier, na.rm = T)
+numero.de.outliers.MCD
+```
+
+
+Tenemos por tanto 436 observaciones que son outliers en nuestro problema en función de estas variables. El siguiente paso, será obtener los outliers puros, es decir, aquellos que están debidos a combinaciones de variables y no a valores anómalos inusualmente altos o bajos en una de sus variables. 
+
+
+Para ello, construimos las siguientes variables:
+
+Por tanto, debemos construir las siguientes variables:
+
+* indices.de.outliers.en.alguna.columna -> A través de la función vector_claves_outliers_IQR_en_alguna_columna 
+* indices.de.outliers.multivariantes.MCD -> A partir de la variable is.MCD.outlier calculada anteriormente
+* indices.de.outliers.multivariantes.MCD.pero.no.1variantes   (debe usar setdiff sobre las anteriores variables)
+* nombres.de.outliers.multivariantes.MCD.pero.no.1variantes   (debe usar rownames)
+
+```{r}
+indices.de.outliers.en.alguna.columna<-vector_claves_outliers_IQR_en_alguna_columna(mydata.numeric.scaled)
+
+indices.de.outliers.multivariantes.MCD<-which(is.MCD.outlier)
+
+indices.de.outliers.multivariantes.MCD.pero.no.1variantes<-setdiff(indices.de.outliers.multivariantes.MCD, indices.de.outliers.en.alguna.columna)
+
+nombres.de.outliers.multivariantes.MCD.pero.no.1variantes<-row.names(mydata.numeric)[indices.de.outliers.multivariantes.MCD.pero.no.1variantes]
+
+unique<-unique(nombres.de.outliers.multivariantes.MCD.pero.no.1variantes)
+unique
+```
+
+Tenemos por tanto 107 outliers debidos a combinaciones de gdpuls y gpuls. Vamos a obtener todos los ejemplos que son outliers. Como nuestros nombres son numéricos puede hacerse de manera sencilla:
+
+```{r}
+data.frame.solo.outliers<-data.frame(mydata.numeric.scaled[as.numeric(unique),])
+data.frame.solo.outliers
+row.names(data.frame.solo.outliers)
+```
+
+Por último obtenemos el gráfico de estos outliers. Representaremos en rojo todos los outliers y etiquetaremos aquellos que son outliers debidos a combinaciones anómalas de las variables gdpuls y gpuls.
+
+
+```{r}
+mydata.numeric <- seismic[,-c(1,2,3,4,6,8,10,16,15,14,18,19)]
+mydata.numeric.scaled <- scale(mydata.numeric)
+is.MCD.outlier[1:length(is.MCD.outlier)]<-FALSE
+is.MCD.outlier[as.numeric(unique)]<-TRUE
+MiBoxPlot_juntos(mydata.numeric.scaled,is.MCD.outlier) 
+```
+
+El gráfico es poco revelador debido a que los números se superponen el gráfico, por lo que deberíamos encontrar algún otro método de visualización. Usaremos el biplot. 
+
+
+
+```{r}
+MiBiPlot_Multivariate_Outliers(mydata.numeric.scaled, is.MCD.outlier, "Outliers-Biplot")
+```
+
+Nuevamente se hace muy complicado el estudio de los outliers, ya que los datos son muchos y solo se han tenido en cuenta dos variables para que su combinación de como resultado un outlier. Trataremos de centrarnos en los índices de outliers 2 varite que hemos obtenido antes para analizar que puede estar pasando, antes trataremos de mostrar en rojos estos outliers respecto a las correlaciones de las variables para intentar de encontrar algun patron. 
+
+
+
+```{r}
+indices_de_Outliers<-which(rownames(mydata.numeric)==unique)
+MiPlot_Univariate_Outliers(mydata.numeric, indices_de_Outliers, "UnivariateOutliers")
+```
+
+Nuevamente la gran cantidad de datos hace imposible obtener ninguna interpretación gráfica sobre los datos. Igualmente, todo el proceso viene afectado por los problemas con la funcion uni.plot().
+
+```{r}
+summary(mydata.numeric.scaled)
+summary(mydata.numeric.scaled[as.numeric(unique),])
+```
+
+Dado que los gráficos no ofrecen mucha información en nuestro problema, hemos intentado obtener por medios de datos estadísticos, de medias, medianas y cuartiles alguna razon de porque estos pueden estar siendo considerados outliers. Para ello calculamos las estadísticas del dataset completo y de los datos que son considerados outliers en función de estas dos variables. 
+
+Los datos tampoco son concluyentes y todo parece apuntar a que los outliers que tendremos vendrán dados casi en la totalidad por valores anómalos en una variable, que a muy seguro tambien serán anómalos otras al tratarse de medidas de energia y que **están muy correlacionadas** como hemos visto anteriormente. 
+
