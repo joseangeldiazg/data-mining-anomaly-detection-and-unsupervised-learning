@@ -37,7 +37,7 @@ head(seismic,5)
 str(seismic)
 ```
 
-Para este análisis nos querdaremos con las variables numéricas, eliminando todas las demas de nuestros datos. Dado el caracter de las funciones que usaremos, ademas tendremos que definir un indice de columna y un nomre para los gráficos. 
+Para este análisis nos querdaremos con las variables numéricas, eliminando todas las demás de nuestros datos. Dado el caracter de las funciones que usaremos, ademas tendremos que definir un indice de columna y un nombre para los gráficos. 
 
 ```{r}
 mydata.numeric  = seismic[,-c(1,2,3,8,19)]
@@ -258,20 +258,46 @@ boxplot(mydata.numeric)
 Dado el gran volumen de datos no usaremos la función que los representa con etiquetas ya que de ser así estos se verían representados como una mancha, dado el gran volumen de outliers. 
 
 
+# Test estadísticos sobre los outliers
+
+Cuando trabajamos con la detección de outliers, así como con otras diversas vertientes dentro de la ciencia de datos, saber si los resultados son estadísticamente significativos será casi tan importante, o incluso más, que los procesos anteriores de minería de datos. En esta sección trataremos de sobre estos ello 
+
+Los resultados, están basados en el código del profesor de la asignatura (J.C Cubero) y se han aplicado sobre el conjunto de datos seismic que tenemos entre manos a lo largo de la práctica. Dado que la presencia de outliers en nuestro dataset es muy elevada, realizaremos los test estadisticos para columnas de datos en el caso de tener varios outliers (> de 2). 
+
+Por ello el principal proceso, será obtener sobre que columna vamos a realizar el estudio estadístico.
 
 
+```{r}
+numero.total.outliers.por.columna <- apply(frame.es.outlier, 2, sum)
+numero.total.outliers.por.columna
+```
 
+Nos quedaremos con la columna 4 por ejemplo, con 95 outliers. 
 
+```{r}
+mydata.numeric  = seismic[,-c(1,2,3,8,19)]
+datos.con.varios.outliers <- mydata.numeric[,4]
 
+mydata.numeric = datos.con.varios.outliers
+test.de.rosner = rosnerTest(mydata.numeric, k=95)
 
+is.outlier.rosner = test.de.rosner$all.stats$Outlier
+k.mayores.desviaciones.de.la.media = test.de.rosner$all.stats$Obs.Num
+indices.de.outliers.rosner = k.mayores.desviaciones.de.la.media[is.outlier.rosner]
+valores.de.outliers.rosner = mydata.numeric[indices.de.outliers.rosner]
 
+print("Índices de las k-mayores desviaciones de la media")
+k.mayores.desviaciones.de.la.media
+print("De los k valores fijados, ¿Quién es outlier?")
+is.outlier.rosner 
+print("Los índices de los outliers son:")
+indices.de.outliers.rosner
+print("Los valores de los outliers son:")
+valores.de.outliers.rosner
+MiPlot_Univariate_Outliers (mydata.numeric, indices.de.outliers.rosner, "Test de Rosner")
+```
 
-
-
-
-
-
-
+El test de Rosner funciona, y nos muestra los outliers en esta variable que hemos cogido como muestra.
 
 
 #Análisis de outliers en varias variables 
