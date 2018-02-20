@@ -219,7 +219,6 @@ MiPlot_resultados_TestRosner = function(datos){
 MiBiplot = function(datos){
   PCA.model = princomp(scale(datos))
   biplot = ggbiplot(PCA.model, obs.scale = 1, var.scale=1 , varname.size = 5,alpha = 1/2) 
-  X11()
   print(biplot)
 }
 

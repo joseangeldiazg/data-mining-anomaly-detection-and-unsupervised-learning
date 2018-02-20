@@ -287,7 +287,6 @@ Los datos que usaremos, son los mismos que en el anterior apartado, pero solo no
 library(corrplot)
 M <- cor(seismic[,-c(1,2,3,8,14,15,16,19)])
 corrplot(M, method = "circle")
-str(seismic)
 ```
 
 
@@ -387,13 +386,13 @@ MiBoxPlot_juntos(mydata.numeric.scaled,is.MCD.outlier)
 El gráfico es poco revelador debido a que los números se superponen el gráfico, por lo que deberíamos encontrar algún otro método de visualización. Usaremos el biplot. 
 
 
-
 ```{r}
 MiBiPlot_Multivariate_Outliers(mydata.numeric.scaled, is.MCD.outlier, "Outliers-Biplot")
 ```
 
-Nuevamente se hace muy complicado el estudio de los outliers, ya que los datos son muchos y solo se han tenido en cuenta dos variables para que su combinación de como resultado un outlier. Trataremos de centrarnos en los índices de outliers 2 varite que hemos obtenido antes para analizar que puede estar pasando, antes trataremos de mostrar en rojos estos outliers respecto a las correlaciones de las variables para intentar de encontrar algun patron. 
+Nuevamente se hace muy complicado el estudio de los outliers, ya que los datos son muchos y las variables siguen estando muy correladas lo que implica que casi todo el gráfico vaya en la misma dirección. Además solo se han tenido en cuenta dos variables para que su combinación de como resultado un outlier. 
 
+Trataremos de centrarnos en los índices de outliers 2 varite que hemos obtenido antes para analizar que puede estar pasando, antes trataremos de mostrar en rojos estos outliers respecto a las correlaciones de las variables para intentar de encontrar algun patrón. 
 
 
 ```{r}
@@ -410,5 +409,111 @@ summary(mydata.numeric.scaled[as.numeric(unique),])
 
 Dado que los gráficos no ofrecen mucha información en nuestro problema, hemos intentado obtener por medios de datos estadísticos, de medias, medianas y cuartiles alguna razon de porque estos pueden estar siendo considerados outliers. Para ello calculamos las estadísticas del dataset completo y de los datos que son considerados outliers en función de estas dos variables. 
 
-Los datos tampoco son concluyentes y todo parece apuntar a que los outliers que tendremos vendrán dados casi en la totalidad por valores anómalos en una variable, que a muy seguro tambien serán anómalos otras al tratarse de medidas de energia y que **están muy correlacionadas** como hemos visto anteriormente. 
+Los datos tampoco son concluyentes y todo parece apuntar a que los outliers que tendremos vendrán dados casi en la totalidad por valores anómalos en una variable, que a muy seguro tambien serán anómalos otras al tratarse de medidas de energía y que **están muy correlacionadas** como hemos visto anteriormente. 
 
+Descartamos por tanto el método de Mahalanobis para la obtención de outliers, dado que estos son muchos en nuestro problema y tienen valores similares entre las variables y las observaciones (poca varianza) que además están muy correlacionadas por lo que usaremos otras técnicas que puedan comportarse mejor en nuestro problema como LOF o técnicas de clustering que será lo que veremos en la siguiente sección. 
+
+
+# Outliers Multivariante: LOF
+
+Dado que tanto las técnicas LOF como las basadas en clustering trabajan con distancias, deberemos basarnos en datos normalizados. Para ello, basandonos en el estudio de correlaciones visto anteriormente para reducir las instancias, nos quedaremos con las variables numéricas más importantes y menos correlacionadas para este estudio.
+
+Creamos los objetos que contendrán los datos que usaremos:
+
+```{r}
+mydata.numeric <- seismic[,-c(1,2,3,4,6,8,10,14,15,16,18,19)]
+mydata.numeric.scaled <- scale(mydata.numeric)
+row.names(mydata.numeric.scaled)<-row.names(mydata.numeric)
+```
+
+
+Antes de comenzar a usar estas técnicas, volveremos a realiazr un análisis *grosso modo* utilizando las técnicas de distantacias Manhalanobis, demostrando como en la anterior sección que estas no pueden aplicarse al dominio de nuestro problema. 
+
+
+```{r}
+#Obtenemos los outliers del plot de la sección anterior
+is.MCD.outlier <-mvoutlier.plot$outliers
+numero.de.outliers.MCD<-sum(is.MCD.outlier, na.rm = T)
+
+#Dibujamos un gráfico de correlación con las medidas Manhalobis
+corr.plot(mydata.numeric.scaled[,1], mydata.numeric.scaled[,2])
+```
+
+Si analiazamos el gráfico anterior, podemos comprobar como la elipse azul (distancia Manhalobis) si que es capaz de discernir entre ciertos outliers, ya que aunque solo hace un grupo, engloba a los más representativos aunque sin duda para neustro problema es muy optimista. Por otro lado, la medida **Manhalobis robusta** (elipse roja) engloba al grupo mayoritario y consideraría outliers todo lo demás, algo que se ajusta para nada a la realidad. Por último, vamos a analizar el biplot, pero eliminaremos algunos datos para obtener una mejor representación:
+
+
+```{r}
+mydata.numeric2<-mydata.numeric[1:500,]
+MiBiplot(mydata.numeric2)
+```
+
+Nuevamente vemos una estrecha correlacion entre las variables, aunque ahora si que podemos ver algo mejor la distribución de los datos que igualmente, tienen mucho solapamiento y problemente variaznas no muy elevadas. Estudiaremos por tanto los outliers con distancia LOF.
+
+
+El primer paso será obtener el vector con los scrores LOF para cada uno de los ejemplos, para esto, deberemos definir el número de vecinos LOF. 
+
+
+```{r}
+numero.de.vecinos.lof = 5
+lof.scores<-lofactor(mydata.numeric.scaled,k=numero.de.vecinos.lof)
+lof.scores<-lof.scores[is.finite(lof.scores)]
+plot(lof.scores)
+```
+
+Si análiamos el gráfico, podemos contabilizar unos **25 ejemplos** que salen mucho de lo normal en el gráfico, por lo que usaremos estos ejemplos como partida para la siguiente variable. Además, obtendremos los indices de las muestras que aparecen consideradas como outliers segun la métrica LOF. 
+
+
+```{r}
+numero.de.outliers = 25
+names(lof.scores)<-1:length(lof.scores)
+lof.scores<-sort(lof.scores,decreasing = T)
+indices.de.lof.outliers.ordenados <- as.integer(names(lof.scores))
+#Seleccionamos los 25 primeros
+indices.de.lof.top.outliers<-indices.de.lof.outliers.ordenados[1:25]
+```
+
+Por último, obtendremos estos outliers en un vector lógico y utilizaremos la representación biplot.
+
+```{r}
+is.lof.outlier<- row.names(mydata.numeric.scaled) %in% indices.de.lof.top.outliers
+MiBiPlot_Multivariate_Outliers(mydata.numeric.scaled, is.lof.outlier, "Biplot de los outliers LOF")
+```
+
+
+Nuevamente la gran cantidad de datos que tiene el dataset nos dificulta ver donde se situan los outliers, aunque tenemos claro que están sitados en el mismo lugar que nos ofrecia la medida Manhalobis, es decir, reunidos en el centro. Aún así, de este modo, encontramos la medida 393, que está correctamente localizada como outlier y puede ser que sea un outlier 2-variate debido a combinaciones anómalas de las gpuls y nbumps. Vamos a comprobar esta premisa. 
+
+```{r}
+#Mostramos las variables estadisticas del dataset escalado:
+summary(mydata.numeric.scaled)
+
+#Mostramos los valores para la muestra: 
+mydata.numeric.scaled[c(393,878,1021,502),]
+```
+
+Parece que todos las otras observaciones que hemos comprobado, siguen una cierta pogresión en nbumps, que son el número de medidas de cierta energia de manera ordinal que se obtienen, pero la que salio de ojo en neustro estudio la 393, tiene una gran diferencia con todas las demás en este punto, por lo que puede ser un outlier debido además de porque contiene outliers en sus columnas, la combinacion de datos en la variables nbumps es muy anómala.
+
+## Comparacion LOF con outliers en una sola dimensión
+
+
+En primer lugar, obtenemos los outliers IQR.
+
+```{r}
+vector.claves.outliers.IQR.en.alguna.columna<-vector_claves_outliers_IQR_en_alguna_columna(mydata.numeric.scaled)
+vector.es.outlier.IQR.en.alguna.columna <- vector_es_outlier_IQR_en_alguna_columna(mydata.numeric.scaled)
+vector.claves.outliers.IQR.en.alguna.columna<-unique(vector.claves.outliers.IQR.en.alguna.columna)
+MiBiPlot_Multivariate_Outliers(mydata.numeric.scaled, vector.es.outlier.IQR.en.alguna.columna, "Biplot de los outliers IQR")
+```
+
+Vemos como el número de outliers aument y se localiazan aquellos que tienen datos anómalos en una columna al menos. Tras obtener estos, los comparamos con **setdiff** con aquellos que son outliers LOF.
+
+```{r}
+indices.de.outliers.multivariantes.LOF.pero.no.1variantes<-setdiff(indices.de.lof.top.outliers, vector.claves.outliers.IQR.en.alguna.columna)
+```
+
+## Ampliación
+
+Dado que siempre utilizamos las columnas numéricas, usaremos la función sapply para obtener solo las columnas numéricas del dataframe:
+
+```{r}
+numericseismic<-seismic[,sapply(seismic, is.numeric)]
+```
