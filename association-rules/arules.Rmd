@@ -9,6 +9,8 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+En este script se ve una pequeña introducción al paquete arules. 
+
 ## Preparación de las BDS
 
 El primer paso será pasar la base de datos a un conjunto de transacciones. 
