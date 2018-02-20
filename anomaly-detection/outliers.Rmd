@@ -632,3 +632,79 @@ centroides.valores
 ```
 
 
+
+## Ampliación:
+
+
+En la ampliación de las sección de análisis de outliers basado en clustering, usaremos clustering basado en medoides en lugar de centros, es decir PAM (partition around medoids).
+
+El primer paso será obtener las distancias de cada uno de los objetos, sobre las que después utilizaremos la función, pam del paquete cluster. 
+
+
+```{r}
+m.dist<-dist(mydata.numeric, method = "euclidean")
+modelo.pam<-pam(m.dist, k=numero.de.clusters)
+modelo.pam$medoids
+```
+
+Ya tenemos nuestros medoides y los registros con su cluster asociado. Podemos obtener los registros pertenecientes por tanto a los medoides normalizados y sin normalizar. 
+
+
+```{r}
+medoides.valores<-mydata.numeric[modelo.pam$medoids,]
+medoides.valores
+
+medoides.valores.normalizados<-mydata.numeric.scaled[modelo.pam$medoids,]
+medoides.valores.normalizados
+```
+
+Llegados a este punto, ya tenemos todos los datos necesarios para obtener los cluster haciendo uso de la función top_clustering_outliers que implementamos anteriormente. 
+
+
+```{r}
+top.pam<-top_clustering_outliers(mydata.numeric.scaled, modelo.pam$clustering, medoides.valores.normalizados, numero.de.outliers)
+top.pam
+```
+
+
+Los siguientes puntos, están basados en el código del profesor de la asignatura (J.C. Cubero).
+
+
+```{r}
+top_clustering_outliers_distancia_relativa = function(datos.normalizados, 
+                                                      indices.asignacion.clustering, 
+                                                      datos.centroides.normalizados, 
+                                                      numero.de.outliers){
+  
+  dist_centroides = distancias_a_centroides (datos.normalizados, 
+                                             indices.asignacion.clustering, 
+                                             datos.centroides.normalizados)
+  
+  cluster.ids = unique(indices.asignacion.clustering)
+  k           = length(cluster.ids)
+  
+  distancias.a.centroides.por.cluster    = sapply(1:k , 
+                                                  function(x) dist_centroides [indices.asignacion.clustering  == cluster.ids[x]])
+  
+  distancias.medianas.de.cada.cluster    = sapply(1:k , 
+                                                  function(x) median(dist_centroides[[x]]))
+  
+  todas.las.distancias.medianas.de.cada.cluster  = distancias.medianas.de.cada.cluster[indices.asignacion.clustering]
+  ratios = dist_centroides   /  todas.las.distancias.medianas.de.cada.cluster
+  
+  indices.top.outliers           = order(ratios, decreasing=T)[1:numero.de.outliers]
+  
+  list(distancias = ratios[indices.top.outliers]  , indices = indices.top.outliers)
+}
+
+
+top.outliers.kmeans.distancia.relativa = top_clustering_outliers_distancia_relativa(mydata.numeric.scaled, indices.clustering, centroides.normalizados, numero.de.outliers)
+
+
+cat("Índices de los top k clustering outliers (k-means, usando distancia relativa)")
+top.outliers.kmeans.distancia.relativa$indices 
+cat("Distancias a sus centroides de los top k clustering outliers (k-means, usando distancia relativa)")
+top.outliers.kmeans.distancia.relativa$distancias
+```
+
+
