@@ -8,8 +8,6 @@ output: pdf_document
 
 Vamos a trabajar con el dataset Seismic, que contiene informacion sobre medidas sísmicas. Trata de detectar el peligro sismico en función de ciertas característcas de medida y registros. Sus datos, en inglés, son:
 
-Attribute information:
-
 - 1. seismic: result of shift seismic hazard assessment in the mine working obtained by the seismic method (a - lack of hazard, b - low hazard, c - high hazard, d - danger state); 
 - 2. seismoacoustic: result of shift seismic hazard assessment in the mine working obtained by the  seismoacoustic method; 
 - 3. shift: information about type of a shift (W - coal-getting, N -preparation shift); 
@@ -504,11 +502,23 @@ vector.claves.outliers.IQR.en.alguna.columna<-unique(vector.claves.outliers.IQR.
 MiBiPlot_Multivariate_Outliers(mydata.numeric.scaled, vector.es.outlier.IQR.en.alguna.columna, "Biplot de los outliers IQR")
 ```
 
-Vemos como el número de outliers aument y se localiazan aquellos que tienen datos anómalos en una columna al menos. Tras obtener estos, los comparamos con **setdiff** con aquellos que son outliers LOF.
+Vemos como el número de outliers aumentan y se localiazan aquellos que tienen datos anómalos en una columna al menos. Tras obtener estos, los comparamos con **setdiff** con aquellos que son outliers LOF, quedandonos solo con aquellos que son outliers por combinación de variables. 
 
 ```{r}
 indices.de.outliers.multivariantes.LOF.pero.no.1variantes<-setdiff(indices.de.lof.top.outliers, vector.claves.outliers.IQR.en.alguna.columna)
 ```
+
+Por último vamos a mostrar sobre los datos reales estos ejemplos y compararlos con las medidas estadísticas básicas para ver que puede ocurrir con ellos
+
+```{r}
+summary(mydata.numeric.scaled)
+```
+
+```{r}
+mydata.numeric.scaled[indices.de.outliers.multivariantes.LOF.pero.no.1variantes,]
+```
+
+Es complicado ver que variables pueden estar influenciadas en estos outliers, ya que aunque todas están dentro del baremo habra ciertas tendencias que un experto en la materia sería capaz de analizar y de las cuales obtendría información muy relevante de cara al enfoque posterior del problema. 
 
 ## Ampliación
 
@@ -517,3 +527,108 @@ Dado que siempre utilizamos las columnas numéricas, usaremos la función sapply
 ```{r}
 numericseismic<-seismic[,sapply(seismic, is.numeric)]
 ```
+
+# Análisis multivariante basados en clustering
+
+En esta última sección usaremos análisis basados en clustering para la identificación de outliers. Estos enfoques residen en la obtención de distancias a los centroides de cluster, catalagoando como outliers aquellos ejemplos que queden fuera del 'radio' de una determianada distancia. 
+
+Para evitar posibles problemas y cambios sobre los datos reales que se hayan llevado a cabo en procesos anteriores, volveremos a declarar nuestros datos. Dado que trabajaremos con distancias, estos deberán estar una vez más normalizados. 
+
+
+```{r}
+mydata.numeric <- seismic[,-c(1,2,3,4,6,8,10,14,15,16,18,19)]
+mydata.numeric.scaled <- scale(mydata.numeric)
+row.names(mydata.numeric.scaled)<-row.names(mydata.numeric)
+```
+
+Declaramos también una serie de variables globales que serán utilizadas en procesos posteriores como el número de clusters y los outliers, que acorde a lo visto en la etapa anterior podría ser 20. También fijaremos una semilla para poder replicar los experimentos. 
+
+
+```{r}
+numero.de.outliers   <- 20
+numero.de.clusters   <- 3
+set.seed(2)  # Para establecer la semilla para la primera iteración de kmeans
+```
+
+Comenzaremos creando un modelo k-means, del cual obtendremos los indices del cluster y los centros.
+
+
+```{r}
+modelo.kmeans <- kmeans(mydata.numeric.scaled,numero.de.clusters)
+indices.clustering <- modelo.kmeans$cluster
+centroides.normalizados <- modelo.kmeans$centers
+```
+
+Ahora, calcularemos la distancia euclidea para cada ejemplo con su centroide, para ello podemos usar la siguiente función:
+
+```{r}
+distancias_a_centroides <- function (datos.normalizados, indices.asignacion.clustering, datos.centroides.normalizados)
+{
+  sqrt(rowSums(   (datos.normalizados - datos.centroides.normalizados[indices.asignacion.clustering,])^2))
+}
+
+dist.centroides <- distancias_a_centroides(mydata.numeric.scaled, indices.clustering, centroides.normalizados)
+
+# Ordenamos las distancias 
+dist.centroides <- dist.centroides[order(dist.centroides, decreasing = T)]
+
+# Nos quedamos con las mayores que serán los outliers
+dist.centroides <- dist.centroides[1:numero.de.outliers]
+dist.centroides
+```
+
+
+Dado que estas tareas que hemos realizado, se suelen realizar con bastante regularidad, generalizaremos las operaciones en una función:
+
+```{r}
+top_clustering_outliers <- function(datos.normalizados, indices.asignacion.clustering, datos.centroides.normalizados, numero.de.outliers)
+{
+  dist.centroides <- distancias_a_centroides(datos.normalizados, indices.asignacion.clustering, datos.centroides.normalizados)
+  dist.centroides <- dist.centroides[order(dist.centroides, decreasing = T)]
+  dist.centroides <- dist.centroides[1:numero.de.outliers]
+  
+  return(list("Indices"=as.integer(names(dist.centroides)),
+              "Distancias"=unname(dist.centroides)))
+}
+
+listaoutliers<-top_clustering_outliers(mydata.numeric.scaled, indices.clustering, centroides.normalizados, numero.de.outliers)
+
+listaoutliers
+```
+
+Ahora, dibujaremos los datos en un biplot, pero dejando los colores en funcion de los cluster creados. 
+
+```{r}
+numero.de.datos   = nrow(mydata.numeric.scaled)
+is.kmeans.outlier = rep(FALSE, numero.de.datos) 
+is.kmeans.outlier[listaoutliers$Indices] <- TRUE
+
+
+BIPLOT.isOutlier             = is.kmeans.outlier
+BIPLOT.cluster.colors        = c("blue","red","brown")
+BIPLOT.asignaciones.clusters = indices.clustering
+MiBiPlot_Clustering_Outliers(mydata.numeric.scaled, "K-Means Clustering Outliers")
+```
+
+
+Por último puede resultar interesante revertir el proceso de normalización de los datos sobre los centroides obtenidos. Para ello, tendremos que utilizar la siguiente formula:
+
+*z-score = (dato - media.columna) / sd.columna*
+
+
+```{r}
+#obtenemos la media de cada columna
+mis.datos.medias<- colMeans(modelo.kmeans$centers)
+
+#obtenemos las desviaciones típicas
+mis.datos.desviaciones <- apply(modelo.kmeans$centers,2,sd)
+
+#multiplicamos cada dato del centroide por la desviación de cada columna
+centroides.por.desviacion<-sweep(centroides.normalizados,2,mis.datos.desviaciones,"*")
+
+#por último sumamos las medias y ya tenemos los valores reales
+centroides.valores<-sweep(centroides.por.desviacion,2,mis.datos.medias,"+")
+centroides.valores
+```
+
+
