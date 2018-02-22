@@ -20,18 +20,139 @@ names(car)<-c("precio-compra","precio-mantenimiento","puertas","pasajeros", "mal
 
 ## 2 Análisis exploratorio
 
+Vamos a comprobar si tenemos datos completos en los datos, ya que los valores perdidos siempre pueden causar problemas. 
+
+```{r}
+sum(is.na(car))
+```
+
+Vemos que no hay valores perdidos por lo que el siguiente paso será ver de que tipo son nuestros datos, así como sus distribuciones para comenzar a hacernos una idea de que es lo que tenemos entre manos. 
+
+```{r}
+str(car)
+```
+
+
+Parece que todos son factores, por lo que no tendremos variables numéricas que partir en rangos que puedan ser caracterizados.
+
 ```{r}
 library(Hmisc)
-str(car)
 describe(car)
 ```
+
+Respecto a las distribuciones, vemos que salvo la clase, final, donde tenemos mas coches catalogados como malos que buenos, todas las demás variables se distribuyen de manera homogénea y no balanceda. Esto nos beneficiará en el proceso de minado de reglas de asociación ya que tendremos representaciones homogéneas de los ítems. Dicho esto, estamos en posición de comenzar nuestro estudio de reglas de asociación y e itemsets frecuentes.  
+
 
 ## 3 Paso a base de datos transaccional
 
 Para el proceso de obtención de reglas de asociación, la base de datos debe ser transaccional. Nuestro dataset, segun lo estudiado en el punto anterior se presta a ello de manera fácil, por lo que no tendremos que preparar mucho los datos. 
 
 ```{r}
+library(arules)
 car.transactions <- as(car, "transactions")
 summary(car.transactions)
 ```
+
+
+## 4 Itemsets
+
+En esta sección usaremos las transacciones de nuestro dataset para realizar un análisis de los itemsets. Para ello, nos centraremos en los **itemsets frecuentes, maximales y cerrados**. 
+
+El pauquete **arules** tiene una función muy útil que nos permite ver la distribución de ítems-frecuentes de manera gráfica para un valor determinado de soporte mínimo. 
+
+```{r}
+itemFrequencyPlot(car.transactions, support = 0.1, cex.names=0.8)
+```
+
+Si analizamos el anterior gráfico, podemos comprobar como solo **clase=unacc**, está presente en mas de la mirtadad de las transacciones. Por otro lado, las demás variables se mantienene estables lo que graficamente nos induce a pensar que es un dataset bastante artificial o confeccionado a conciencia para tener estas frecuencias de ítems. A modo interesante, cabe remarcar que no hay presencia de los ítems **clase=good** o **clase=vgood**, que a muy seguro tendrán valores de soporte menor de 0.1. Dado que estas ítems son muy interesantes para obtener información del problema, ya podemos remarcar que el valor de soporte para la obtención de las reglas deberá ser menor de 0.1. Vamos a comprobar que esta premisa es así, representando el mismo gráfico pero con menos soporte. 
+
+```{r}
+itemFrequencyPlot(car.transactions, support = 0.01, cex.names=0.8)
+```
+
+
+En el anterior gráfico podemos apreciar como han aparecido dos nuevas columnas, que reprentan los ítems **clase=good** y **clase=vgood** lo que nos lleva a concluir por tanto que los valores de soporte de estos ítems en función al resto son muy bajos, algo que los convierte en muy interesantes y dignos de estudio más aún si cabe, si estos representan a las dos clases aceptables del problema.
+
+Vamos a obtener el algoritmo **apriori**, para obtener los itemsets frecuentes y analizarlos con más detalle atendiendo a sus medidas. 
+
+```{r}
+iCar <- apriori(car.transactions, parameter = list(support = 0.01, target="frequent", minlen=1))
+#Ordenamos los ítems por soporte descendente
+iCar <- sort(iCar, by="support")
+```
+
+Hemos generado un total de 2291 itemsets frecuentes. Vamos a ver cuales son estos, usando el comando **inspect**.
+
+```{r}
+#Inspeccionamos los 100 primeros
+inspect(head(iCar, n=50))
+```
+
+Si nos centraramos solo en los ítemsets frecuentes, ya podríamos obtener información relevante del dataset e incluso hacer algunas "predicciones" en un hipotético caso de toma de decisiones, como por ejemplo el set de ítems *[29]  {precio-compra=vhigh,clase=unacc} * en contra de lo que podríamos llegar a pensar aparecen bastantes veces en el dataset que si el precio de compra es muy caro, la clase será la peor, por lo que ya podríamos casi asegurar que con mucha probabilidad que un coche sea evaluado como bueno o malo vendrá dado por otros motivos en lugar de un precio caro. Otro set de ítems interesantes, podría ser el *[12]  {pasajeros=2,clase=unacc}*, aquí estamos claramente frente a coches deportivos de dos plazas que en un  gran número de casos, son asignados a la peor clase, por lo que esto nos deja saber que probablemente lo que tenemos entre mano son evaluaciones que nada tienen que ver con lujos o grandes motores sino con coches serviciales y destinados al uso diario. 
+
+Si quisieramos acotar y seguir analizando los ítemsets frecuentes, podríamos usar rangos definidos por las variables **minlen** y **maxlen** para definir cuantos ítems queremos que formen los sets. 
+
+```{r}
+iCar <- apriori(car.transactions, parameter = list(support = 0.01, target="frequent", minlen=2, maxlen=4))
+#Ordenamos los ítems por soporte descendente
+iCar <- sort(iCar, by="support")
+#Mostramos a modo de ejemplo los 20 primeros
+inspect(head(iCar, n=20))
+```
+
+Estos parámetros anteriores pueden ser muy útiles en grandes conjuntos de datos donde la explosión de itemsets sea muy grande. En nuestro caso, dejaremos los parámetros por defecto dado que a simple vista podemos manejarlos todos sin muchas complicaciones. Obtendremos por tanto los de todos los tamaños y crearemos un gráfico de barras para ver su distribución.
+
+```{r}
+iCar <- apriori(car.transactions, parameter = list(support = 0.01, target="frequent"))
+barplot(table(size(iCar)), xlab="itemset size", ylab="count")
+```
+
+
+En el anterior gráfico podemos ver como la mayor parte de los ítemsets frecuentes son de tamaño 3 y 4, por lo que todo apunta a que podremos obtener buenas reglas y de un tamaño aceptable para sacar conclusiones en nuestro proceso de evaluación de coches. 
+
+En esta caso, los ítems no son muchos, por lo que podríamos quedarnos con ellos sin problema. Por otro lado, en caso de tener una set de ítems mayor, podríamos usar los ítems maximales o cerrados. Para obtener estos, el paquete apriori nos ofrece funciones fáciles de usar como sigue:
+
+* **Maximales**:
+
+```{r}
+imaxCar <- iCar[is.maximal(iCar)]
+imaxCar
+inspect(head(sort(imaxCar, by="support")))
+```
+
+
+* **Cerrados**:
+
+```{r}
+icloCar <- iCar[is.closed(iCar)]
+icloCar
+inspect(head(sort(icloCar, by="support")))
+```
+
+
+Una vez obtenidos todos, vamos a representar con un gráfico el número de ítems de cada clase:
+
+```{r}
+barplot( c(frequent=length(iCar), closed=length(icloCar), maximal=length(imaxCar)), ylab="count", xlab="itemsets")
+```
+
+El gráfico muestra lo que segun la teoría cabe esperar y es que los maximales, son los menos abundantes, frente a cerrados y frecuentes que siempre se dan de la mano, aunque siempre son estos segundos algo más abundantes en el dominio del problema. 
+
+Dado que tenemos todos estos conjuntos vamos a comprobar las premisas de eficiencia que instan a usar unos u otros, que en casi todos los casos se traducen en reducción del espacio que ocupan. Por ello, vamos a obtener los tamaños de cada uno de los objetos. 
+
+
+```{r}
+object.size(iCar)
+object.size(icloCar)
+object.size(imaxCar)
+```
+
+En este caso, los tamaños son insignificantes, pero si extrapolaramos los datos a un problema real, que incluso pudiera ser catalogado como Big Data, tener una representación que nos permitiera ahorrar espacio de casi un 50%, (como es el caso de los ítems maximales en nuestro problema), seguramente los beneficios fuerán máyores y necesarios de tener en cuetna. 
+
+
+
+
+
+
+
 
