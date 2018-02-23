@@ -177,7 +177,18 @@ rulesPruned <- rulesSorted[!redundant]
 rulesPruned
 ```
 
-Reglas no redundantes, aparecen solo 38. Esto ha simplificado el problema aún más, tanto que incluso podríamos llegar a pensar que el dataset no es apropiado ya que no ofrece muchas caracteristicas descriptivas. Vamos a ispeccionar estas reglas. 
+Reglas no redundantes, aparecen solo 38. Esto ha simplificado el problema aún más, tanto que incluso podríamos llegar a pensar que el dataset no es apropiado ya que no ofrece muchas caracteristicas descriptivas. 
+
+Antes de entrar en el análisis de las reglas, en un dominio donde el número de estas sea muy abundante puede ser de especial utilidad obtener visualmente información sobre el número de reglas y la bondaz de las mismas. Para ello, podemos apoyarnos en gráficos:
+
+```{r}
+library(arulesViz)
+plot(rulesPruned, method="two-key plot")
+```
+
+
+
+En este gráfico, podemos ver las reglas obtenidas, el tamaño de las mismas y como se situan en función del soporte y la confianza. Algo muy util incluso para ver ciertos patrones, como por ejemplo, comprobar como las reglas de mayor número de ítems se situan con valores menores de soporte. Una vez vista la distribucion de las reglas obtenidas vamos a inspeccionarlas manualmente:
 
 ```{r}
 inspect(rulesPruned)
@@ -200,7 +211,6 @@ Dado que los resultados vistos anteriormente no son muy buenos, se nos presenta 
 *Clase=acc, Clase=good y Clase=vgood -> Clase=BuenaEvaluacion
 
 Para realizar este paso, primero copiaremos en dataset (para evitar modificar el original), cambiaremos estos valores y tras ello obtendremos de nuevo las reglas. 
-
 
 ```{r}
 cargeneralizazo<-car
@@ -292,12 +302,21 @@ De primeras podemos comprobar la hipótesis planteada anteriormente, ya que la p
 También es interesante como **puertas=2** parece ser el factor predominante en las reglas que causen mala evaluación por lo que esta información podría ser utilizada por ejemplo en una compañia automovilística que fuera a lanzar un nuevo coche en un determinado sector y sabría que la evaluación que los usarios harán de el, aunque los tamaños sean del coche en sí talla media-grande, será con mucha probabilidad mala si no se remedia el factor de las puertas. 
 
 
-### 7.2 Visualización
+Aunque, como hemos podido comprobar, las reglas de asociación son muy descriptivas y facilmente entendibles, en algunos casos puede ser complicado obtener información de las mismas, por lo que usaremos gráficos para ver si podemos obtener o representar de una manera más amable los resultados.
+
+```{r}
+plot(rulesPrunedBuena[1:10], method="graph")
+```
+
+Este gráfico se representa de manera bastante mala, ya que se agrupan mucho por ello deberemos utilizar la opción engine=interactive, donde podremos mover los nodos y las artistas del gráfico a nuestra manera obteniendo una mejor representación como puede ser:
+
+![Representación en grafo con engine=interactive](image/in.png)
+
+A modo de ejemplo, en este gráfico podemos ver como si pasajeros=more, seuridad=med y precio-compra=low, entonces, la clase será buena. 
+
+### 7.2 Ítems negados y Análisis por grupos
 
 
-### 7.3 Ítems negados y Análisis por grupos
 
-
-
-
+## 8 Resumen
 
