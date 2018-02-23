@@ -1,0 +1,12 @@
+name: "Minería de Datos: Aprendizaje no supervisado."
+output_dir: "../"
+exclude: [""]
+navbar:
+  title: "Minería de Datos: Aprendizaje no supervisado."
+  left:
+    - text: "Home"
+      href: index.html
+    - text: "Detección de Anomalías"
+      href: outliers.html
+    - text: "Reglas de Asociación"
+      href: car-rules.html

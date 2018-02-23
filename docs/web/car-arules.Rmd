@@ -2,7 +2,7 @@
 title: 'Car Evaluation: Reglas de Asociación'
 author: "joseangeldiazg"
 date: "20/2/2018"
-output: pdf_document
+output: html_document
 ---
 
 ## 1 Introducción al dataset
@@ -14,7 +14,7 @@ El dataset puede encontrarse en el siguiente enlace: https://archive.ics.uci.edu
 Leemos los datos y construimos un dataframe, ya que estos vienen separados en data y names. 
 
 ```{r}
-car<-read.table("data/car.data", sep = ",")
+maint<-read.table("data/car.data", sep = ",")
 names(car)<-c("precio-compra","precio-mantenimiento","puertas",
               "pasajeros", "maletero", "seguridad", "clase")
 ```

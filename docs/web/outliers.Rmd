@@ -1,0 +1,738 @@
+---
+title: "Detección de Anomalías"
+author: "joseangeldiazg"
+date: "19/2/2018"
+output: html_document
+---
+## Datos
+
+Vamos a trabajar con el dataset Seismic, que contiene información sobre medidas sísmicas. Trata de detectar el peligro sísmico en función de ciertas característcas de medida y registros. Sus datos, en inglés, son:
+
+- 1. seismic: result of shift seismic hazard assessment in the mine working obtained by the seismic method (a - lack of hazard, b - low hazard, c - high hazard, d - danger state); 
+- 2. seismoacoustic: result of shift seismic hazard assessment in the mine working obtained by the  seismoacoustic method; 
+- 3. shift: information about type of a shift (W - coal-getting, N -preparation shift); 
+- 4. genergy: seismic energy recorded within previous shift by the most active geophone (GMax) out of geophones monitoring the longwall; 
+- 5. gpuls: a number of pulses recorded within previous shift by GMax; 
+- 6. gdenergy: a deviation of energy recorded within previous shift by GMax from average energy recordedduring eight previous shifts; 
+- 7. gdpuls: a deviation of a number of pulses recorded within previous shift by GMax from average number of pulses recorded during eight previous shifts; 
+- 8. ghazard: result of shift seismic hazard assessment in the mine working obtained by the  seismoacoustic method based on registration coming form GMax only; - 9. nbumps: the number of seismic bumps recorded within previous shift; 
+- 10. nbumps2: the number of seismic bumps (in energy range [10^2,10^3)) registered within previous shift; 
+- 11. nbumps3: the number of seismic bumps (in energy range [10^3,10^4)) registered within previous shift; 
+- 12. nbumps4: the number of seismic bumps (in energy range [10^4,10^5)) registered within previous shift; 
+- 13. nbumps5: the number of seismic bumps (in energy range [10^5,10^6)) registered within the last shift; 
+- 14. nbumps6: the number of seismic bumps (in energy range [10^6,10^7)) registered within previous shift; 
+- 15. nbumps7: the number of seismic bumps (in energy range [10^7,10^8)) registered within previous shift; 
+- 16. nbumps89: the number of seismic bumps (in energy range [10^8,10^10)) registered within previous shift;
+- 17. energy: total energy of seismic bumps registered within previous shift; 
+- 18. maxenergy: the maximum energy of the seismic bumps registered within previous shift; 
+- 19. class: the decision attribute - '1' means that high energy seismic bump occurred in the next shift('hazardous state'), '0' means that no high energy seismic bumps occurred in the next shift ('non-hazardous state').
+
+
+Los datos han sido recopilados del repositorio UCI y vienen en formato arrf. 
+
+```{r}
+library(foreign)
+seismic<-read.arff("data/seismic-bumps.arff")
+head(seismic,5)
+str(seismic)
+```
+
+Para este análisis nos querdaremos con las variables numéricas, eliminando todas las demás de nuestros datos. Dado el carácter de las funciones que usaremos, además tendremos que definir un índice de columna y un nombre para los gráficos. 
+
+```{r}
+mydata.numeric  = seismic[,-c(1,2,3,8,19)]
+indice.columna  = 1
+nombre.mydata   = "seismic"
+head(mydata.numeric,5)
+```
+
+Por último para facilitar también procesos posteriores obtemeos los datos escalados:
+
+```{r}
+mydata.numeric.scaled<-scale(mydata.numeric)
+columna<-mydata.numeric[indice.columna]
+nombre.columna<-names(columna)
+columna.scaled<-mydata.numeric.scaled[,nombre.columna]
+```
+
+
+
+# 1 Análisis estadístico de Outliers en una variable mediante IQR 
+
+
+En esta primera parte se obtendrán los outliers de manera manual sin utilizar funciones. Para obtener estos, usaremos el IQR,  o lo que es lo mismo la distancia intercuartil, es decir, necesitaremos obtener el primer cuartil, el tercer cuartil y la diferencia entre ambos. 
+
+```{r}
+cuartil.primero<-quantile(columna.scaled,0.25)
+cuartil.primero
+cuartil.tercero<-quantile(columna.scaled,0.75)
+cuartil.tercero
+iqr<-IQR(columna.scaled)
+iqr
+```
+
+
+Ahora debemos obtener los límites normales y extremos, que se calcularán de la siguiente manera:
+
+* extremo.superior.outlier.normal  = cuartil tercero + 1.5 IQR
+* extremo.inferior.outlier.normal  = cuartil primero - 1.5 IQR
+* extremo.superior.outlier.extremo = cuartil tercero + 3 IQR
+* extremo.inferior.outlier.extremo = cuartil primero - 3 IQR
+
+```{r}
+extremo.superior.outlier.normal<-cuartil.tercero+1.5*iqr
+extremo.inferior.outlier.normal<-cuartil.primero-1.5*iqr
+extremo.superior.outlier.extremo<-cuartil.tercero+3*iqr
+extremo.inferior.outlier.extremo<-cuartil.primero-3*iqr
+```
+
+Una vez tenemos todas estas variables, deberemos estudiar si hay outliers comparando la columna con el valor mínimo y máximo de outliers normales y extremos. 
+
+Calculamos los **outliers normales**:
+
+```{r}
+vector.es.outlier.normal<-columna.scaled>extremo.superior.outlier.normal | columna.scaled<extremo.inferior.outlier.normal 
+```
+
+Calculamos los **outliers extremos**:
+
+```{r}
+vector.es.outlier.extremo<-columna.scaled>extremo.superior.outlier.extremo | columna.scaled<extremo.inferior.outlier.extremo
+```
+
+En base a los resultados obtenidos parece que estamos ante un problema con bastantes outliers, y dado que estos provienen de sensores sísmicos, el problema es a la par complejo e interesante porque a muy seguro estos outliers, valores que se salen del las tablas por decirlo de alguna manera, indicarán o podrán indicar un riesgo de terremoto alto. Vamos a analizar estos outliers.
+
+## 1.1 Índices y valores de los outliers
+
+Vamos a obtener los índices de los outliers, para posteriormente mostrar todos sus datos. 
+
+Para los normales:
+
+```{r}
+claves.outiers.normales<-which(vector.es.outlier.normal)
+claves.outiers.normales
+data.frame.outliers.normales<-data.frame(mydata.numeric[claves.outiers.normales,])
+data.frame.outliers.normales
+nombres.outliers.normales <- row.names(data.frame.outliers.normales)
+nombres.outliers.normales 
+valores.outliers.normales <- mydata.numeric[claves.outiers.normales,indice.columna]
+valores.outliers.normales
+```
+
+Para los extremos:
+
+```{r}
+claves.outiers.extremo<-which(vector.es.outlier.extremo)
+claves.outiers.extremo
+data.frame.outliers.extremo<-data.frame(mydata.numeric[claves.outiers.extremo,])
+data.frame.outliers.extremo
+nombres.outliers.extremo <- row.names(data.frame.outliers.extremo)
+nombres.outliers.extremo 
+valores.outliers.extremo <- mydata.numeric[claves.outiers.extremo,indice.columna]
+valores.outliers.extremo
+```
+
+Tenemos un total de 257 outliers extremos y 334 outliers normales, y esto solo en la variable genergy por lo que a muy probablemente el número de outliers aumente. 
+
+## 1.2 Desviación de los outliers con respecto a la media de la columna
+
+Por último, obtendremos los valores de los outliers pero para la columna normalizada. 
+
+```{r}
+valores.normalizados.outliers.normales<-columna.scaled[claves.outiers.normales]
+valores.normalizados.outliers.extremo<-columna.scaled[claves.outiers.extremo]
+```
+
+
+## 1.3 Plot
+
+Por último usaremos un gráfico para ver estos outliers para ello, llamamos a la siguiente función: 
+
+*MiPlot_Univariate_Outliers (columna de datos, indices -claves numéricas- de outliers , nombre de columna)*
+
+```{r}
+MiPlot_Univariate_Outliers(columna,claves.outiers.normales,nombre.columna)
+MiPlot_Univariate_Outliers(columna,claves.outiers.extremo,nombre.columna)
+```
+
+Podemos ver que los outliers son muy abundantes y serán outliers por encima, esto era de esperar ya que al tratarse de datos físicos lo normal en muchos casos más al tratarse de energía son valores constantes o que varían muy poco, excepto cuando como en este caso se de el caso de una gran cantidad de energía liberada, con la que obtendremos outliers por encima. 
+
+
+## 1.4 BoxPlot
+
+Vamos a utilizar un boxplot para ver estos outliers, para ello usarmeos la función:
+
+*MiBoxPlot_IQR_Univariate_Outliers = function (datos, indice.de.columna, coef = 1.5)*
+
+```{r}
+MiBoxPlot_IQR_Univariate_Outliers(mydata.numeric.scaled,indice.columna, coef = 1.5)
+```
+
+
+Al representar encima los valores o nombres de los outliers el gráfico se emborrona, por lo que podremos usar boxplot nativo sobre todos los datos para ver mejor estos outliers:
+
+
+```{r}
+boxplot(mydata.numeric.scaled)
+```
+
+Vemos que la presencia de outliers es muy fuerte en todo el dataset, y como predejimos, estos vienen dados por encima en la mayoría de los casos teniendo medianas muy bajas y constantes lo que indica la estabilidad de los datos durante todas las medidas.
+
+
+## 1.5 Cómputo de los outliers IQR con funciones propias
+
+En este punto realizaremos el estudio IQR de los datos, pero usando funciones propias:
+
+```{r}
+vector_outliers<-vector_es_outlier_IQR(mydata.numeric, indice.columna)
+vector_claves_outliers<-vector_claves_outliers_IQR(mydata.numeric, indice.columna)
+```
+
+## 1.6 Trabajamos con varias columnas simultáneamente
+
+Lo interesante de usar estas funciones, reside en la obtención de los outliers en las distintas columnas. Aunque el análisis es aún centrandonos en una sola variable, podremos vamos a obtener todos los outliers usando la función:
+
+*vector_claves_outliers_IQR_en_alguna_columna = function(datos, coef = 1.5)*
+
+
+```{r}
+indices.de.outliers.en.alguna.columna<-vector_claves_outliers_IQR_en_alguna_columna(mydata.numeric)
+```
+
+Esta variable contiene los índices de aquellos registros que tienen un valor anómalo con respecto a alguna columna. Si mostramos los datos normalizados de dichos registros, debe salir lo siguiente:
+
+
+```{r}
+mydata.numeric[indices.de.outliers.en.alguna.columna,]
+```
+
+Estamos ante un data set con muchos outliers (+75%), tantos que tendremos que buscar una manera de condensar estos de manera que podamos estudiarlos, ya que los datos son tan dispares y en cierta medida complejos que no podrán obtenerse conclusiones lógicas con tan solo observarlos. 
+
+
+## 1.7 Ampliación
+
+Realizaremos el estudio anterior, pero solo utilizando ordenes básicas de R, es decir, sin recurrir a la función usada anteriormente. 
+
+
+### Índices y valores de los outliers
+
+
+Obtendremos por tanto, para cada columna un vector lógico que nos indique si estamos ante un outlier o no y guardamos todo en una matriz. 
+
+```{r}
+frame.es.outlier <- sapply(1:ncol(mydata.numeric),vector_es_outlier_IQR, datos=mydata.numeric) 
+
+head(frame.es.outlier)
+```
+
+Ahora obtendremos el número total de outliers por columna:
+help(sapply)
+
+```{r}
+numero.total.outliers.por.columna <- apply(frame.es.outlier, 2, sum)
+numero.total.outliers.por.columna
+```
+
+Como hemos dicho anteriormente, podemos comprobar que el número de *univariate outliers* en el problema es muy elevado y excepto den dos columnas, los tenemos presentes en todas. 
+
+Con el fin de obtener los datos con los outliers, obtendremos ahora las claves de las filas que en alguna de sus columnas tienen outliers. 
+
+```{r}
+indices.de.outliers.en.alguna.columna<- sapply(1:ncol(mydata.numeric),
+                                               vector_claves_outliers_IQR, 
+                                               datos=mydata.numeric) 
+
+indices.de.outliers.en.alguna.columna <- sort(unique(unlist(indices.de.outliers.en.alguna.columna)))
+```
+
+### Desviación de los outliers con respecto a la media de la columna
+
+```{r}
+mydata.numeric[indices.de.outliers.en.alguna.columna,]
+```
+
+
+### BoxPlot
+
+Por último utilizamos boxplot para obtener el gráfico con los outliers:
+
+```{r}
+boxplot(mydata.numeric)
+```
+
+
+Dado el gran volumen de datos no usaremos la función que los representa con etiquetas ya que de ser así estos se verían representados como una mancha, dado el gran volumen de outliers. 
+
+
+#2 Test estadísticos sobre los outliers
+
+Cuando trabajamos con la detección de outliers, así como con otras diversas vertientes dentro de la ciencia de datos, saber si los resultados son estadísticamente significativos será casi tan importante, o incluso más, que los procesos anteriores de minería de datos. En esta sección trataremos de sobre ello.
+
+Los resultados, están basados en el código del profesor de la asignatura (J.C Cubero) y se han aplicado sobre el conjunto de datos seismic que estamos tratando a lo largo de la práctica. Dado que la presencia de outliers en nuestro dataset es muy elevada, realizaremos los test estadísticos para columnas de datos en el caso de tener varios outliers (> de 2). 
+
+Por ello el principal proceso, será obtener sobre que columna vamos a realizar el estudio estadístico.
+
+```{r}
+numero.total.outliers.por.columna <- apply(frame.es.outlier, 2, sum)
+numero.total.outliers.por.columna
+```
+
+Nos quedaremos con la columna 4 por ejemplo, con 95 outliers. 
+
+```{r}
+mydata.numeric  = seismic[,-c(1,2,3,8,19)]
+datos.con.varios.outliers <- mydata.numeric[,4]
+
+mydata.numeric = datos.con.varios.outliers
+test.de.rosner = rosnerTest(mydata.numeric, k=95)
+
+is.outlier.rosner = test.de.rosner$all.stats$Outlier
+k.mayores.desviaciones.de.la.media = test.de.rosner$all.stats$Obs.Num
+indices.de.outliers.rosner = k.mayores.desviaciones.de.la.media[is.outlier.rosner]
+valores.de.outliers.rosner = mydata.numeric[indices.de.outliers.rosner]
+
+print("Índices de las k-mayores desviaciones de la media")
+k.mayores.desviaciones.de.la.media
+print("De los k valores fijados, ¿Quién es outlier?")
+is.outlier.rosner 
+print("Los índices de los outliers son:")
+indices.de.outliers.rosner
+print("Los valores de los outliers son:")
+valores.de.outliers.rosner
+MiPlot_Univariate_Outliers (mydata.numeric, indices.de.outliers.rosner, "Test de Rosner")
+```
+
+El test de Rosner funciona, y nos muestra los outliers en esta variable que hemos cogido como muestra.
+
+#3 Análisis de outliers en varias variables 
+
+Los outliers, podrán ser denominados como tal como resultado de la aparición de valores anómalos en una o varias de sus variables. En este estudio, obtendremos los valores de estos en como resultados de combinaciones de variables utilizando distribuciones normales. 
+
+Los datos que usaremos, son los mismos que en el anterior apartado, pero solo nos quedaremos con algunas de las variables ya que en pasos anteriores podremos usar como máximo 10 variables, para mejorar esto, eliminaremos aquellas variables muy correlacionadas, algo que podría influir también en la obtención de outliers multivariable. Eliminaremos de primeras las variables nbumps6, nbumps7, nbumps89, ya  que siempre tienen valor 0 y no aportan nada. 
+
+```{r}
+library(corrplot)
+M <- cor(seismic[,-c(1,2,3,8,14,15,16,19)])
+corrplot(M, method = "circle")
+```
+
+Podemos ver por tanto que enery y maxenergy tienen correlación de 1 prácticamente, por lo que nos quedaremos solo con energy.También eliminaremos genergy, gdenergy, nbums5 y nbums2 y 1 ya que nbums 3 será alto si las anteriores lo han sido.
+
+```{r}
+mydata.numeric <- seismic[,-c(1,2,3,4,6,8,10,11,12,13,16,15,14,18,19)]
+mydata.numeric.scaled <- scale(mydata.numeric)
+```
+
+## 3.1 Paquete mvoutlier
+
+En esta sección, usaremos el paquete mvoutlier.
+
+### Obtención de los outliers multivariantes
+
+Utilizaremos el paquete mvoutlier para la obtención de los outliers que son considerados como tal por la combinación de varias de sus variables. Estos outliers son obtenidos por medio de la distancia de Mahalanobis, por lo que podremos usar los datos sin normalizar ya que esta medida es muy robusta a la escala. 
+
+Declaramos los parámetros de entradas y una semilla para poder reproducir resultados. 
+
+
+```{r}
+alpha.value = 0.05
+alpha.value.penalizado = 1 - ( 1 - alpha.value) ^ (1 / nrow(mydata.numeric))   
+set.seed(12)  
+```
+
+Analizaremos los outliers provocados entre las variables gpuls y pgpuls, ya que si añadimos las demás variables uniplot no es capaz de obtener los resultados debido a la singularidad de la matriz que forma para sus cálculos. 
+
+```{r}
+mvoutlier.plot<-suppressWarnings(uni.plot(mydata.numeric[,c(1,2)], symb=FALSE, alpha = alpha.value.penalizado))
+```
+
+
+Si analizamos el gráfico podemos ver en rojo los outliers y en verde los ejemplos que no son outliers. Los datos interesantes en este caso, son aquellos, que no son outliers por sus valores altos, sino los que están situados en valores "normales" ya que estos serán outliers por combinaciones de varias de estas variables. 
+
+
+### Análisis de los outliers
+
+
+El gráfico anterior nos da una idea global de las anomalías en nuestro problema, pero será mucho más interesante obtener los ejemplos que representan a los datos en rojo (outliers). Para ello accedemos a los outliers del objeto mvoutlier.plot. 
+
+
+```{r}
+is.MCD.outlier <-mvoutlier.plot$outliers
+numero.de.outliers.MCD<-sum(is.MCD.outlier, na.rm = T)
+numero.de.outliers.MCD
+```
+
+
+Tenemos por tanto *436 observaciones* que son outliers en nuestro problema en función de estas variables. El siguiente paso, será obtener los outliers puros, es decir, aquellos que están debidos a combinaciones de variables y no a valores anómalos inusualmente altos o bajos en una de sus variables. 
+
+
+Para ello, construimos las siguientes variables:
+
+Por tanto, debemos construir las siguientes variables:
+
+* indices.de.outliers.en.alguna.columna -> A través de la función vector_claves_outliers_IQR_en_alguna_columna 
+* indices.de.outliers.multivariantes.MCD -> A partir de la variable is.MCD.outlier calculada anteriormente
+* indices.de.outliers.multivariantes.MCD.pero.no.1variantes   (debe usar setdiff sobre las anteriores variables)
+* nombres.de.outliers.multivariantes.MCD.pero.no.1variantes   (debe usar rownames)
+
+```{r}
+indices.de.outliers.en.alguna.columna<-vector_claves_outliers_IQR_en_alguna_columna(mydata.numeric.scaled)
+
+indices.de.outliers.multivariantes.MCD<-which(is.MCD.outlier)
+
+indices.de.outliers.multivariantes.MCD.pero.no.1variantes<-setdiff(indices.de.outliers.multivariantes.MCD,
+                                                                   indices.de.outliers.en.alguna.columna)
+
+nombres.de.outliers.multivariantes.MCD.pero.no.1variantes<-row.names(mydata.numeric)[indices.de.outliers.multivariantes.MCD.pero.no.1variantes]
+
+unique<-unique(nombres.de.outliers.multivariantes.MCD.pero.no.1variantes)
+unique
+```
+
+Tenemos por tanto 107 outliers debidos a *combinaciones de gdpuls y gpuls*. Vamos a obtener todos los ejemplos que son outliers. Como nuestros nombres son numéricos puede hacerse de manera sencilla:
+
+```{r}
+data.frame.solo.outliers<-data.frame(mydata.numeric.scaled[as.numeric(unique),])
+data.frame.solo.outliers
+row.names(data.frame.solo.outliers)
+```
+
+Por último obtenemos el gráfico de estos outliers. Representaremos en rojo todos los outliers y etiquetaremos aquellos que son outliers debidos a combinaciones anómalas de las variables gdpuls y gpuls.
+
+
+```{r}
+mydata.numeric <- seismic[,-c(1,2,3,4,6,8,10,16,15,14,18,19)]
+mydata.numeric.scaled <- scale(mydata.numeric)
+is.MCD.outlier[1:length(is.MCD.outlier)]<-FALSE
+is.MCD.outlier[as.numeric(unique)]<-TRUE
+MiBoxPlot_juntos(mydata.numeric.scaled,is.MCD.outlier) 
+```
+
+El gráfico es poco revelador debido a que los números se superponen en el gráfico, por lo que deberíamos encontrar algún otro método de visualización. Usaremos el biplot. 
+
+
+```{r}
+MiBiPlot_Multivariate_Outliers(mydata.numeric.scaled, is.MCD.outlier, "Outliers-Biplot")
+```
+
+Nuevamente se hace muy complicado el estudio de los outliers, ya que los datos son muchos y las variables siguen estando muy correladas lo que implica que casi todo el gráfico vaya en la misma dirección. Además solo se han tenido en cuenta dos variables para que su combinación de como resultado un outlier. 
+
+Trataremos de centrarnos en los índices de outliers 2 varite que hemos obtenido antes para analizar que puede estar pasando, antes trataremos de mostrar en rojos estos outliers respecto a las correlaciones de las variables para intentar de encontrar algun patrón. 
+
+
+```{r}
+indices_de_Outliers<-which(rownames(mydata.numeric)==unique)
+MiPlot_Univariate_Outliers(mydata.numeric, indices_de_Outliers, "UnivariateOutliers")
+```
+
+Nuevamente la gran cantidad de datos hace imposible obtener ninguna interpretación gráfica sobre los datos. Igualmente, todo el proceso viene afectado por los problemas con la funcion uni.plot().
+
+```{r}
+summary(mydata.numeric.scaled)
+summary(mydata.numeric.scaled[as.numeric(unique),])
+```
+
+Dado que los gráficos no ofrecen mucha información en nuestro problema, hemos intentado obtener por medios de datos estadísticos, de medias, medianas y cuartiles alguna razon de porque estos pueden estar siendo considerados outliers. Para ello calculamos las estadísticas del dataset completo y de los datos que son considerados outliers en función de estas dos variables. 
+
+Los datos tampoco son concluyentes y todo parece apuntar a que los outliers que tendremos vendrán dados casi en la totalidad por valores anómalos en una variable, que a muy seguro también serán anómalos otras al tratarse de medidas de energía y que **están muy correlacionadas** como hemos visto anteriormente. 
+
+Descartamos por tanto el método de Mahalanobis para la obtención de outliers, dado que estos son muchos en nuestro problema y tienen valores similares entre las variables y las observaciones (poca varianza) que además están muy correlacionadas por lo que usaremos otras técnicas que puedan comportarse mejor en nuestro problema como LOF o técnicas de clustering que será lo que veremos en la siguiente sección. 
+
+
+#4 Outliers Multivariante: LOF
+
+Dado que tanto las técnicas LOF como las basadas en clustering trabajan con distancias, deberemos basarnos en datos normalizados. Para ello, basandonos en el estudio de correlaciones visto anteriormente para reducir las instancias, nos quedaremos con las variables numéricas más importantes y menos correlacionadas para este estudio.
+
+Creamos los objetos que contendrán los datos que usaremos:
+
+```{r}
+mydata.numeric <- seismic[,-c(1,2,3,4,6,8,10,14,15,16,18,19)]
+mydata.numeric.scaled <- scale(mydata.numeric)
+row.names(mydata.numeric.scaled)<-row.names(mydata.numeric)
+```
+
+
+Antes de comenzar a usar estas técnicas, volveremos a realiazr un análisis *grosso modo* utilizando las técnicas de distantacias Manhalanobis, demostrando como en la anterior sección que estas no pueden aplicarse al dominio de nuestro problema. 
+
+
+```{r}
+#Obtenemos los outliers del plot de la sección anterior
+is.MCD.outlier <-mvoutlier.plot$outliers
+numero.de.outliers.MCD<-sum(is.MCD.outlier, na.rm = T)
+
+#Dibujamos un gráfico de correlación con las medidas Manhalobis
+corr.plot(mydata.numeric.scaled[,1], mydata.numeric.scaled[,2])
+```
+
+Si analiazamos el gráfico anterior, podemos comprobar como la elipse azul (distancia Manhalobis) si que es capaz de discernir entre ciertos outliers, ya que aunque solo hace un grupo, engloba a los más representativos aunque sin duda para nuestro problema es muy optimista. Por otro lado, la medida **Manhalobis robusta** (elipse roja) engloba al grupo mayoritario y consideraría outliers todo lo demás, algo que se ajusta para nada a la realidad. Por último, vamos a analizar el biplot, pero eliminaremos algunos datos para obtener una mejor representación:
+
+```{r}
+mydata.numeric2<-mydata.numeric[1:500,]
+MiBiplot(mydata.numeric2)
+```
+
+Nuevamente vemos una estrecha correlación entre las variables, aunque ahora si que podemos ver algo mejor la distribución de los datos que igualmente, tienen mucho solapamiento y problemente variaznas no muy elevadas. Estudiaremos por tanto los outliers con distancia LOF.
+
+
+El primer paso será obtener el vector con los scrores LOF para cada uno de los ejemplos, para esto, deberemos definir el número de vecinos LOF. 
+
+
+```{r}
+numero.de.vecinos.lof = 5
+lof.scores<-lofactor(mydata.numeric.scaled,k=numero.de.vecinos.lof)
+lof.scores<-lof.scores[is.finite(lof.scores)]
+plot(lof.scores)
+```
+
+Si análiamos el gráfico, podemos contabilizar unos **25 ejemplos** que salen mucho de lo normal en el gráfico, por lo que usaremos estos ejemplos como partida para la siguiente variable. Además, obtendremos los índices de las muestras que aparecen consideradas como outliers segun la métrica LOF. 
+
+
+```{r}
+numero.de.outliers = 25
+names(lof.scores)<-1:length(lof.scores)
+lof.scores<-sort(lof.scores,decreasing = T)
+indices.de.lof.outliers.ordenados <- as.integer(names(lof.scores))
+#Seleccionamos los 25 primeros
+indices.de.lof.top.outliers<-indices.de.lof.outliers.ordenados[1:25]
+```
+
+Por último, obtendremos estos outliers en un vector lógico y utilizaremos la representación biplot.
+
+```{r}
+is.lof.outlier<- row.names(mydata.numeric.scaled) %in% indices.de.lof.top.outliers
+MiBiPlot_Multivariate_Outliers(mydata.numeric.scaled, is.lof.outlier, "Biplot de los outliers LOF")
+```
+
+
+Nuevamente la gran cantidad de datos que tiene el dataset nos dificulta ver donde se situan los outliers, aunque tenemos claro que están sitados en el mismo lugar que nos ofrecia la medida Manhalobis, es decir, reunidos en el centro. Aún así, de este modo, encontramos la medida 393, que está correctamente localizada como outlier y puede ser que sea un outlier 2-variate debido a combinaciones anómalas de las gpuls y nbumps. Vamos a comprobar esta premisa. 
+
+```{r}
+#Mostramos las variables estadisticas del dataset escalado:
+summary(mydata.numeric.scaled)
+
+#Mostramos los valores para la muestra: 
+mydata.numeric.scaled[c(393,878,1021,502),]
+```
+
+Parece que todos las otras observaciones que hemos comprobado, siguen una cierta pogresión en nbumps, que son el número de medidas de cierta energía de manera ordinal que se obtienen, pero la que salio de ojo en neustro estudio la 393, tiene una gran diferencia con todas las demás en este punto, por lo que puede ser un outlier debido además de porque contiene outliers en sus columnas, la combinación de datos en la variables nbumps es muy anómala.
+
+## 4.1 Comparacion LOF con outliers en una sola dimensión
+
+En primer lugar, obtenemos los outliers IQR.
+
+```{r}
+vector.claves.outliers.IQR.en.alguna.columna<-vector_claves_outliers_IQR_en_alguna_columna(mydata.numeric.scaled)
+vector.es.outlier.IQR.en.alguna.columna <- vector_es_outlier_IQR_en_alguna_columna(mydata.numeric.scaled)
+vector.claves.outliers.IQR.en.alguna.columna<-unique(vector.claves.outliers.IQR.en.alguna.columna)
+MiBiPlot_Multivariate_Outliers(mydata.numeric.scaled, vector.es.outlier.IQR.en.alguna.columna, "Biplot de los outliers IQR")
+```
+
+Vemos como el número de outliers aumentan y se localiazan aquellos que tienen datos anómalos en una columna al menos. Tras obtener estos, los comparamos con **setdiff** con aquellos que son outliers LOF, quedandonos solo con aquellos que son outliers por combinación de variables. 
+
+```{r}
+indices.de.outliers.multivariantes.LOF.pero.no.1variantes<-setdiff(indices.de.lof.top.outliers, vector.claves.outliers.IQR.en.alguna.columna)
+```
+
+Por último vamos a mostrar sobre los datos reales estos ejemplos y compararlos con las medidas estadísticas básicas para ver que puede ocurrir con ellos
+
+```{r}
+summary(mydata.numeric.scaled)
+```
+
+```{r}
+mydata.numeric.scaled[indices.de.outliers.multivariantes.LOF.pero.no.1variantes,]
+```
+
+Es complicado ver que variables pueden estar influenciadas en estos outliers, ya que aunque todas están dentro del baremo habra ciertas tendencias que un experto en la materia sería capaz de analizar y de las cuales obtendría información muy relevante de cara al enfoque posterior del problema. 
+
+##4.2 Ampliación
+
+Dado que siempre utilizamos las columnas numéricas, usaremos la función sapply para obtener solo las columnas numéricas del dataframe:
+
+```{r}
+numericseismic<-seismic[,sapply(seismic, is.numeric)]
+```
+
+#5 Análisis multivariante basados en clustering
+
+En esta última sección usaremos análisis basados en clustering para la identificación de outliers. Estos enfoques residen en la obtención de distancias a los centroides de cluster, catalagoando como outliers aquellos ejemplos que queden fuera del 'radio' de una determianada distancia. 
+
+Para evitar posibles problemas y cambios sobre los datos reales que se hayan llevado a cabo en procesos anteriores, volveremos a declarar nuestros datos. Dado que trabajaremos con distancias, estos deberán estar una vez más normalizados. 
+
+
+```{r}
+mydata.numeric <- seismic[,-c(1,2,3,4,6,8,10,14,15,16,18,19)]
+mydata.numeric.scaled <- scale(mydata.numeric)
+row.names(mydata.numeric.scaled)<-row.names(mydata.numeric)
+```
+
+Declaramos también una serie de variables globales que serán utilizadas en procesos posteriores como el número de clusters y los outliers, que acorde a lo visto en la etapa anterior podría ser 20. También fijaremos una semilla para poder replicar los experimentos. 
+
+
+```{r}
+numero.de.outliers   <- 20
+numero.de.clusters   <- 3
+set.seed(2)  # Para establecer la semilla para la primera iteración de kmeans
+```
+
+Comenzaremos creando un modelo k-means, del cual obtendremos los índices del cluster y los centros.
+
+
+```{r}
+modelo.kmeans <- kmeans(mydata.numeric.scaled,numero.de.clusters)
+indices.clustering <- modelo.kmeans$cluster
+centroides.normalizados <- modelo.kmeans$centers
+```
+
+Ahora, calcularemos la distancia euclidea para cada ejemplo con su centroide, para ello podemos usar la siguiente función:
+
+```{r}
+distancias_a_centroides <- function (datos.normalizados, indices.asignacion.clustering, datos.centroides.normalizados)
+{
+  sqrt(rowSums(   (datos.normalizados - datos.centroides.normalizados[indices.asignacion.clustering,])^2))
+}
+
+dist.centroides <- distancias_a_centroides(mydata.numeric.scaled, indices.clustering, centroides.normalizados)
+
+# Ordenamos las distancias 
+dist.centroides <- dist.centroides[order(dist.centroides, decreasing = T)]
+
+# Nos quedamos con las mayores que serán los outliers
+dist.centroides <- dist.centroides[1:numero.de.outliers]
+dist.centroides
+```
+
+
+Dado que estas tareas que hemos realizado, se suelen realizar con bastante regularidad, generalizaremos las operaciones en una función:
+
+```{r}
+top_clustering_outliers <- function(datos.normalizados, indices.asignacion.clustering, datos.centroides.normalizados, numero.de.outliers)
+{
+  dist.centroides <- distancias_a_centroides(datos.normalizados, indices.asignacion.clustering, datos.centroides.normalizados)
+  dist.centroides <- dist.centroides[order(dist.centroides, decreasing = T)]
+  dist.centroides <- dist.centroides[1:numero.de.outliers]
+  
+  return(list("Indices"=as.integer(names(dist.centroides)),
+              "Distancias"=unname(dist.centroides)))
+}
+
+listaoutliers<-top_clustering_outliers(mydata.numeric.scaled, indices.clustering, centroides.normalizados, numero.de.outliers)
+
+listaoutliers
+```
+
+Ahora, dibujaremos los datos en un biplot, pero dejando los colores en funcion de los cluster creados. 
+
+```{r}
+numero.de.datos   = nrow(mydata.numeric.scaled)
+is.kmeans.outlier = rep(FALSE, numero.de.datos) 
+is.kmeans.outlier[listaoutliers$Indices] <- TRUE
+
+
+BIPLOT.isOutlier             = is.kmeans.outlier
+BIPLOT.cluster.colors        = c("blue","red","brown")
+BIPLOT.asignaciones.clusters = indices.clustering
+MiBiPlot_Clustering_Outliers(mydata.numeric.scaled, "K-Means Clustering Outliers")
+```
+
+
+Por último puede resultar interesante revertir el proceso de normalización de los datos sobre los centroides obtenidos. Para ello, tendremos que utilizar la siguiente formula:
+
+*z-score = (dato - media.columna) / sd.columna*
+
+
+```{r}
+#obtenemos la media de cada columna
+mis.datos.medias<- colMeans(modelo.kmeans$centers)
+
+#obtenemos las desviaciones típicas
+mis.datos.desviaciones <- apply(modelo.kmeans$centers,2,sd)
+
+#multiplicamos cada dato del centroide por la desviación de cada columna
+centroides.por.desviacion<-sweep(centroides.normalizados,2,mis.datos.desviaciones,"*")
+
+#por último sumamos las medias y ya tenemos los valores reales
+centroides.valores<-sweep(centroides.por.desviacion,2,mis.datos.medias,"+")
+centroides.valores
+```
+
+
+
+##5.1 Ampliación:
+
+
+En la ampliación de las sección de análisis de outliers basado en clustering, usaremos clustering basado en medoides en lugar de centros, es decir PAM (partition around medoids).
+
+El primer paso será obtener las distancias de cada uno de los objetos, sobre las que después utilizaremos la función, pam del paquete cluster. 
+
+```{r}
+m.dist<-dist(mydata.numeric, method = "euclidean")
+modelo.pam<-pam(m.dist, k=numero.de.clusters)
+modelo.pam$medoids
+```
+
+Ya tenemos nuestros medoides y los registros con su cluster asociado. Podemos obtener los registros pertenecientes por tanto a los medoides normalizados y sin normalizar. 
+
+```{r}
+medoides.valores<-mydata.numeric[modelo.pam$medoids,]
+medoides.valores
+
+medoides.valores.normalizados<-mydata.numeric.scaled[modelo.pam$medoids,]
+medoides.valores.normalizados
+```
+
+Llegados a este punto, ya tenemos todos los datos necesarios para obtener los cluster haciendo uso de la función top_clustering_outliers que implementamos anteriormente. 
+
+```{r}
+top.pam<-top_clustering_outliers(mydata.numeric.scaled, modelo.pam$clustering, medoides.valores.normalizados, numero.de.outliers)
+top.pam
+```
+
+
+Los siguientes puntos, están basados en el código del profesor de la asignatura (J.C. Cubero).
+
+
+```{r}
+top_clustering_outliers_distancia_relativa = function(datos.normalizados, 
+                                                      indices.asignacion.clustering, 
+                                                      datos.centroides.normalizados, 
+                                                      numero.de.outliers){
+  
+  dist_centroides = distancias_a_centroides (datos.normalizados, 
+                                             indices.asignacion.clustering, 
+                                             datos.centroides.normalizados)
+  
+  cluster.ids = unique(indices.asignacion.clustering)
+  k           = length(cluster.ids)
+  
+  distancias.a.centroides.por.cluster    = sapply(1:k , 
+                                                  function(x) dist_centroides [indices.asignacion.clustering  == cluster.ids[x]])
+  
+  distancias.medianas.de.cada.cluster    = sapply(1:k , 
+                                                  function(x) median(dist_centroides[[x]]))
+  
+  todas.las.distancias.medianas.de.cada.cluster  = distancias.medianas.de.cada.cluster[indices.asignacion.clustering]
+  ratios = dist_centroides   /  todas.las.distancias.medianas.de.cada.cluster
+  
+  indices.top.outliers           = order(ratios, decreasing=T)[1:numero.de.outliers]
+  
+  list(distancias = ratios[indices.top.outliers]  , indices = indices.top.outliers)
+}
+
+
+top.outliers.kmeans.distancia.relativa = top_clustering_outliers_distancia_relativa(mydata.numeric.scaled, indices.clustering, centroides.normalizados, numero.de.outliers)
+
+
+cat("Índices de los top k clustering outliers (k-means, usando distancia relativa)")
+top.outliers.kmeans.distancia.relativa$indices 
+cat("Distancias a sus centroides de los top k clustering outliers (k-means, usando distancia relativa)")
+top.outliers.kmeans.distancia.relativa$distancias
+```
+
+
+# 6. Resumen
+
+Tras la finalización de la práctica, no se han podido extraer conclusioenes muy relevantes respecto al problema en cuestión, debido en gran medida al desconocimiento en la materia y la cierta dificultad del problema. Aún así, se han encontrado ciertos patrones y éstos se han analizado con un gran abanico de métodos de detección de outliers, lo que deja la puerta abierta a su aplicación a problemas futuros a los que debamos enfrentarnos. 
+
+Centrandonos en la parte técnica del proceso de deteccion de outliers, podríamos afirmar que son procesos complejos a la par que interesantes y que bien como parte de un proceso de pre-procesado o como un análisis en toda regla, deben tenerse en cuenta. 
+
