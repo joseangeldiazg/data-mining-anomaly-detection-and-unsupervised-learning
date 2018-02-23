@@ -432,3 +432,6 @@ Tras este estudio de reglas de asociación llevado a cabo, hemos podido constata
 
 Queda demostrada también la potencia de las reglas de asociación en el ámbito de la minería de datos y nos hace comprender mejor, porque son uno de los métodos que desde su nacimiento han sido más estudiados y extendidos a diferentes problemas. 
 
+La memoria puede encontrarse también ubicada junto a la de anomalías en esta web:
+
+https://joseangeldiazg.github.io/data-mining-anomaly-detection-and-unsupervised-learning/car-arules.html

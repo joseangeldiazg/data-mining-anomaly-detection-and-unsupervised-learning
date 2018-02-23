@@ -736,3 +736,6 @@ Tras la finalización de la práctica, no se han podido extraer conclusioenes mu
 
 Centrandonos en la parte técnica del proceso de deteccion de outliers, podríamos afirmar que son procesos complejos a la par que interesantes y que bien como parte de un proceso de pre-procesado o como un análisis en toda regla, deben tenerse en cuenta. 
 
+La memoria puede encontrarse también ubicada junto a la de reglas de asociación en esta web:
+
+https://joseangeldiazg.github.io/data-mining-anomaly-detection-and-unsupervised-learning/car-arules.html
