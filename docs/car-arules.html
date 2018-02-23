@@ -185,7 +185,7 @@ $(document).ready(function () {
   <a href="outliers.html">Detección de Anomalías</a>
 </li>
 <li>
-  <a href="car-rules.html">Reglas de Asociación</a>
+  <a href="car-arules.html">Reglas de Asociación</a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
@@ -336,10 +336,10 @@ summary(car.transactions)</code></pre>
 <p>En esta sección usaremos las transacciones de nuestro dataset para realizar un análisis de los itemsets. Para ello, nos centraremos en los <strong>itemsets frecuentes, maximales y cerrados</strong>.</p>
 <p>El pauquete <strong>arules</strong> tiene una función muy útil que nos permite ver la distribución de ítems-frecuentes de manera gráfica para un valor determinado de soporte mínimo.</p>
 <pre class="r"><code>itemFrequencyPlot(car.transactions, support = 0.1, cex.names=0.8)</code></pre>
-<p><img src="car-arules_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<p><img src="car-arules_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
 <p>Si analizamos el anterior gráfico, podemos comprobar como solo <strong>clase=unacc</strong>, está presente en más de la mitad de las transacciones. Por otro lado, las demás variables se mantienen estables lo que gráficamente nos induce a pensar que es un dataset bastante artificial o confeccionado a conciencia para tener estas frecuencias de ítems. Cabe remarcar que no hay presencia de los ítems <strong>clase=good</strong> o <strong>clase=vgood</strong>, que a muy seguro tendrán valores de soporte menor de 0.1. Dado que estos ítems son muy interesantes para obtener información del problema, ya podemos remarcar que el valor de soporte para la obtención de las reglas deberá ser menor de 0.1. Vamos a comprobar que esta premisa es así, representando el mismo gráfico pero con menos soporte.</p>
 <pre class="r"><code>itemFrequencyPlot(car.transactions, support = 0.01, cex.names=0.8)</code></pre>
-<p><img src="car-arules_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<p><img src="car-arules_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
 <p>En el anterior gráfico podemos apreciar como han aparecido dos nuevas columnas, que reprentan los ítems <strong>clase=good</strong> y <strong>clase=vgood</strong> lo que nos lleva a concluir por tanto que los valores de soporte de estos ítems en función al resto son muy bajos, algo que los convierte en muy interesantes y dignos de estudio ya que además resentan a dos clases aceptables del problema.</p>
 <p>Vamos a obtener el algoritmo <strong>apriori</strong>, para obtener los itemsets frecuentes y analizarlos con más detalle atendiendo a sus medidas.</p>
 <pre class="r"><code>iCar &lt;- apriori(car.transactions, parameter = list(support = 0.01, target=&quot;frequent&quot;, minlen=1))</code></pre>
@@ -501,7 +501,7 @@ inspect(head(iCar, n=20))</code></pre>
 ## writing ... [2291 set(s)] done [0.00s].
 ## creating S4 object  ... done [0.00s].</code></pre>
 <pre class="r"><code>barplot(table(size(iCar)), xlab=&quot;itemset size&quot;, ylab=&quot;count&quot;)</code></pre>
-<p><img src="car-arules_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
+<p><img src="car-arules_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
 <p>En el anterior gráfico podemos ver como la mayor parte de los ítemsets frecuentes son de tamaño 3 y 4, por lo que todo apunta a que podremos obtener buenas reglas y de un tamaño aceptable para sacar conclusiones en nuestro proceso de evaluación de coches.</p>
 <p>En esta caso, los ítems no son muchos, por lo que podríamos quedarnos con ellos sin problema. Por otro lado, en caso de tener una set de ítems mayor, podríamos usar los ítems maximales o cerrados. Para obtener estos, el paquete apriori nos ofrece funciones fáciles de usar como sigue:</p>
 <ul>
@@ -553,7 +553,7 @@ icloCar</code></pre>
 <p>Una vez obtenidos todos, vamos a representar con un gráfico el número de ítems de cada clase:</p>
 <pre class="r"><code>barplot( c(frequent=length(iCar), closed=length(icloCar), 
            maximal=length(imaxCar)), ylab=&quot;count&quot;, xlab=&quot;itemsets&quot;)</code></pre>
-<p><img src="car-arules_files/figure-html/unnamed-chunk-16-1.png" width="672" /></p>
+<p><img src="car-arules_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
 <p>El gráfico muestra lo que según la teoría cabe esperar y es que los maximales, son los menos abundantes, frente a cerrados y frecuentes que siempre se dan de la mano, aunque siempre son estos segundos algo más abundantes en el dominio del problema.</p>
 <p>Dado que tenemos todos estos conjuntos vamos a comprobar las premisas de eficiencia que instan a usar unos u otros, que en casi todos los casos se traducen en reducción del espacio que ocupan. Por ello, vamos a obtener los tamaños de cada uno de los objetos.</p>
 <pre class="r"><code>object.size(iCar)</code></pre>
@@ -603,7 +603,7 @@ rulesPruned</code></pre>
 <p>Antes de entrar en el análisis de las reglas, en un dominio donde el número de estas sea muy abundante puede ser de especial utilidad obtener visualmente información sobre el número de reglas y la bondaz de las mismas. Para ello, podemos apoyarnos en gráficos:</p>
 <pre class="r"><code>library(arulesViz)
 plot(rulesPruned, method=&quot;two-key plot&quot;)</code></pre>
-<p><img src="car-arules_files/figure-html/unnamed-chunk-20-1.png" width="672" /></p>
+<p><img src="car-arules_files/figure-html/unnamed-chunk-18-1.png" width="672" /></p>
 <p>En este gráfico, podemos ver las reglas obtenidas, el tamaño de las mismas y como se situan en función del soporte y la confianza. Algo muy util incluso para ver ciertos patrones, como por ejemplo, comprobar como las reglas de mayor número de ítems se situan con valores menores de soporte. Una vez vista la distribucion de las reglas obtenidas vamos a inspeccionarlas manualmente:</p>
 <pre class="r"><code>inspect(rulesPruned)</code></pre>
 <pre><code>##      lhs                             rhs                           support confidence     lift count
@@ -1066,7 +1066,7 @@ rulesPrunedBuena &lt;- rulesSorted[!redundant] </code></pre>
 <p>También es interesante como <strong>puertas=2</strong> parece ser el factor predominante en las reglas que causen mala evaluación por lo que esta información podría ser utilizada por ejemplo en una compañia automovilística que fuera a lanzar un nuevo coche en un determinado sector y sabría que la evaluación que los usarios harán de el, aunque los tamaños sean del coche en sí talla media-grande, será con mucha probabilidad mala si no se remedia el factor de las puertas.</p>
 <p>Aunque, como hemos podido comprobar, las reglas de asociación son muy descriptivas y fácilmente entendibles, en algunos casos puede ser complicado obtener información de las mismas, por lo que usaremos gráficos para ver si podemos obtener o representar de una manera más amable los resultados.</p>
 <pre class="r"><code>plot(rulesPrunedBuena[1:10], method=&quot;graph&quot;)</code></pre>
-<p><img src="car-arules_files/figure-html/unnamed-chunk-29-1.png" width="672" /></p>
+<p><img src="car-arules_files/figure-html/unnamed-chunk-27-1.png" width="672" /></p>
 <p>Este gráfico se representa de manera poco útil debido al solapamient de los nodos, hubs y aristas. Por ello deberemos utilizar la opción engine=interactive, donde podremos mover los nodos y las artistas del gráfico a nuestra manera obteniendo una mejor representación como puede ser:</p>
 <div class="figure">
 <img src="image/in.png" alt="Representación en grafo con engine=interactive" />
@@ -1129,7 +1129,7 @@ rules.negadas &lt;- apriori(negados, parameter = list(support = 0.03,
 ## set transactions ...[30 item(s), 1728 transaction(s)] done [0.00s].
 ## sorting and recoding items ... [30 item(s)] done [0.00s].
 ## creating transaction tree ... done [0.00s].
-## checking subsets of size 1 2 3 4 5 6 7 8 done [0.03s].
+## checking subsets of size 1 2 3 4 5 6 7 8 done [0.02s].
 ## writing ... [18858 rule(s)] done [0.01s].
 ## creating S4 object  ... done [0.01s].</code></pre>
 <pre class="r"><code>rules.negadas</code></pre>

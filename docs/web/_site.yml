@@ -1,5 +1,5 @@
 name: "Minería de Datos: Aprendizaje no supervisado."
-output_dir: "../"
+output_dir: "../docs/"
 exclude: [""]
 navbar:
   title: "Minería de Datos: Aprendizaje no supervisado."
@@ -9,4 +9,4 @@ navbar:
     - text: "Detección de Anomalías"
       href: outliers.html
     - text: "Reglas de Asociación"
-      href: car-rules.html
+      href: car-arules.html
