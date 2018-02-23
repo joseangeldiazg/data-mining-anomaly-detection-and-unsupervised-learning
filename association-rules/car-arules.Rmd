@@ -269,14 +269,33 @@ Por último, mostramos las reglas y las estudiamos:
 inspect(rulesPrunedBuena)
 ```
 
+Parece que nuestro proceso ha tenido utilidad y tenemos un buen set de reglas con valores bastante aceptables de medidas de bondaz. Vamos a estudiar algunas reglas interesantes: 
+
+* *[16] {pasajeros=more,maletero=big,seguridad=high} => {clase=BuenaEvaluacion}*  
+* *[17] {pasajeros=more,maletero=big,seguridad=med}  => {clase=BuenaEvaluacion}*
+* *[18] {pasajeros=more,maletero=med,seguridad=high} => {clase=BuenaEvaluacion}* 
+
+Estas tres reglas, confirman la teoria que teníamos anteriormente de que en el proceso de evaluación se están teniendo en cuenta coches serviciales frente a coches lujosos, bonitos o rápidos. Al estudiar las reglas anteriores, es evidente, que estamos ante *coches familiares o del tipo monovolumen* y los cuales son bastante bien valorados a pesar de que otros factores como el tamaño o la seguridad pueda tomar valores dispares. 
+
+Otra regla interesante, puede ser la *[15]{pasajeros=4,maletero=big,seguridad=med} => {clase=BuenaEvaluacion}*, donde vemos como la evaluación de un hipotético coche se permite descensos en seguridad pos de mayor tamaño. 
+
+Por otro lado, hay también reglas triviales que no nos dicen nada como pueden ser  *[1]{precio-compra=low,pasajeros=4,seguridad=high} => {clase=BuenaEvaluacion}* y [3] *{precio-mantenimiento=low,pasajeros=4,seguridad=high} => {clase=BuenaEvaluacion}* donde podemos corroborar la típica expresión popular del "bueno, bonito y barato", pero que no aporta valor ninguno. 
+
+También, puede obtenerse información por ausencia de reglas, es decir, podemos ver que no hay ninguna regla cuyo antecedente contenga el ítem **seguridad=low**, por lo que a muy seguro, este sea un ítem que determinará en la mayoría de los casos una mala evaluación. Para comprobar esta premisa, por último, vamos a estudiar las reglas para **clase=MalaEvaluacion**.
 
 ```{r}
 inspect(rulesPrunedMala)
 ```
 
-### 7.2 Ítems negados
+De primeras podemos comprobar la hipótesis planteada anteriormente, ya que la priemera regla obtenida nos indica que  *{seguridad=low} => {clase=MalaEvaluacion}*, en un gran número de los casos. 
 
-### 7.3 Análisis por grupos
+También es interesante como **puertas=2** parece ser el factor predominante en las reglas que causen mala evaluación por lo que esta información podría ser utilizada por ejemplo en una compañia automovilística que fuera a lanzar un nuevo coche en un determinado sector y sabría que la evaluación que los usarios harán de el, aunque los tamaños sean del coche en sí talla media-grande, será con mucha probabilidad mala si no se remedia el factor de las puertas. 
+
+
+### 7.2 Visualización
+
+
+### 7.3 Ítems negados y Análisis por grupos
 
 
 
