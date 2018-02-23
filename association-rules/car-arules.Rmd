@@ -15,7 +15,8 @@ Leemos los datos y construimos un dataframe, ya que estos vienen separados en da
 
 ```{r}
 maint<-read.table("data/car.data", sep = ",")
-names(car)<-c("precio-compra","precio-mantenimiento","puertas","pasajeros", "maletero", "seguridad", "clase")
+names(car)<-c("precio-compra","precio-mantenimiento","puertas",
+              "pasajeros", "maletero", "seguridad", "clase")
 ```
 
 ## 2 Análisis exploratorio
@@ -40,7 +41,7 @@ library(Hmisc)
 describe(car)
 ```
 
-Respecto a las distribuciones, vemos que salvo la clase, final, donde tenemos mas coches catalogados como malos que buenos, todas las demás variables se distribuyen de manera homogénea y no balanceda. Esto nos beneficiará en el proceso de minado de reglas de asociación ya que tendremos representaciones homogéneas de los ítems. Dicho esto, estamos en posición de comenzar nuestro estudio de reglas de asociación y e itemsets frecuentes.  
+Respecto a las distribuciones, vemos que salvo la clase, final, donde tenemos mas coches catalogados como malos que buenos, todas las demás variables se distribuyen de manera homogénea y no balanceda. Esto nos beneficiará en el proceso de minado de reglas de asociación ya que tendremos representaciones homogéneas de los ítems. Dicho esto, estamos en posición de comenzar nuestro estudio de reglas de asociación e itemsets frecuentes.  
 
 
 ## 3 Paso a base de datos transaccional
@@ -71,7 +72,7 @@ itemFrequencyPlot(car.transactions, support = 0.01, cex.names=0.8)
 ```
 
 
-En el anterior gráfico podemos apreciar como han aparecido dos nuevas columnas, que reprentan los ítems **clase=good** y **clase=vgood** lo que nos lleva a concluir por tanto que los valores de soporte de estos ítems en función al resto son muy bajos, algo que los convierte en muy interesantes y dignos de estudio más aún si cabe, si estos representan a las dos clases aceptables del problema.
+En el anterior gráfico podemos apreciar como han aparecido dos nuevas columnas, que reprentan los ítems **clase=good** y **clase=vgood** lo que nos lleva a concluir por tanto que los valores de soporte de estos ítems en función al resto son muy bajos, algo que los convierte en muy interesantes y dignos de estudio más aún si cabe, si estos representan a dos clases aceptables del problema.
 
 Vamos a obtener el algoritmo **apriori**, para obtener los itemsets frecuentes y analizarlos con más detalle atendiendo a sus medidas. 
 
@@ -93,7 +94,10 @@ Si nos centraramos solo en los ítemsets frecuentes, ya podríamos obtener infor
 Si quisieramos acotar y seguir analizando los ítemsets frecuentes, podríamos usar rangos definidos por las variables **minlen** y **maxlen** para definir cuantos ítems queremos que formen los sets. 
 
 ```{r}
-iCar <- apriori(car.transactions, parameter = list(support = 0.01, target="frequent", minlen=2, maxlen=4))
+iCar <- apriori(car.transactions, parameter = list(support = 0.01, 
+                                                   target="frequent", 
+                                                   minlen=2, 
+                                                   maxlen=4))
 #Ordenamos los ítems por soporte descendente
 iCar <- sort(iCar, by="support")
 #Mostramos a modo de ejemplo los 20 primeros
@@ -133,7 +137,8 @@ inspect(head(sort(icloCar, by="support")))
 Una vez obtenidos todos, vamos a representar con un gráfico el número de ítems de cada clase:
 
 ```{r}
-barplot( c(frequent=length(iCar), closed=length(icloCar), maximal=length(imaxCar)), ylab="count", xlab="itemsets")
+barplot( c(frequent=length(iCar), closed=length(icloCar), 
+           maximal=length(imaxCar)), ylab="count", xlab="itemsets")
 ```
 
 El gráfico muestra lo que segun la teoría cabe esperar y es que los maximales, son los menos abundantes, frente a cerrados y frecuentes que siempre se dan de la mano, aunque siempre son estos segundos algo más abundantes en el dominio del problema. 
@@ -147,10 +152,131 @@ object.size(icloCar)
 object.size(imaxCar)
 ```
 
-En este caso, los tamaños son insignificantes, pero si extrapolaramos los datos a un problema real, que incluso pudiera ser catalogado como Big Data, tener una representación que nos permitiera ahorrar espacio de casi un 50%, (como es el caso de los ítems maximales en nuestro problema), seguramente los beneficios fuerán máyores y necesarios de tener en cuetna. 
+En este caso, los tamaños son insignificantes, pero si extrapolaramos los datos a un problema real, que incluso pudiera ser catalogado como Big Data, tener una representación que nos permitiera ahorrar espacio de casi un 50%, (como es el caso de los ítems maximales en nuestro problema), seguramente los beneficios fuerán mayores y necesarios de tener en cuenta. 
+
+## 5 Reglas de asociación
+
+En este punto usaremos el método apriori para obtener las reglas de asociación. Esta es la parte esencial de la prácica y trataremos de evaluar cuando un coche es bueno y cuando es malo mediante estos métodos. 
 
 
+```{r}
+rules <- apriori(car, parameter = list(support = 0.01, confidence = 0.8, minlen = 2))
+rules
+```
 
+
+Hemos obtenido 415 reglas de asociación, por lo que al no ser muchas, podremos estudiarlas sin mucha complejidad. Aún así, antes de entrar en el análisis vamos a eliminar las reglas redundantes, para no caer en el error de analizar dos veces la misma regla. 
+
+
+```{r}
+rulesSorted = sort(rules, by = "confidence")
+subsetMatrix <- is.subset(rulesSorted, rulesSorted)
+subsetMatrix[lower.tri(subsetMatrix, diag=TRUE)] <- FALSE
+redundant <- colSums(subsetMatrix, na.rm=TRUE) >= 1
+rulesPruned <- rulesSorted[!redundant] 
+rulesPruned
+```
+
+Reglas no redundantes, aparecen solo 38. Esto ha simplificado el problema aún más, tanto que incluso podríamos llegar a pensar que el dataset no es apropiado ya que no ofrece muchas caracteristicas descriptivas. Vamos a ispeccionar estas reglas. 
+
+```{r}
+inspect(rulesPruned)
+```
+
+Si analizamos las relglas obtenidas, parece que hemos tenido un claro sesgo hacia nuestra clase mayoritaria y obtenemos reglas aceptables que nos llevan a saber cuando un coche no es apropiado. Deberemos afinar un poco más el proceso de obtención de reglas para obtener informacion que realmente aporte valor. Esto podrá hacerse probablemente, realizando un estudio basado en generalización o jerarquización de reglas. 
+
+Aún así, aunque este set de reglas no nos ayuda mucho con nuestra premisa inicial de ver cuando un coche será evaluado como bueno, sí que nos ayuda para obtener información acerca de cuando un determinado vehiculo tendrá evaluación negativa, ademas de darnos información curiosa aunque ciertamente trivial como la regla * [1] {clase=vgood} => {seguridad=high} * que nos indica que si la evaluación del vehículo es muy buena, la seguridad será muy alta. Por otro lado, volvemos a tener un claro ejemplo en como los coches 'deportivos' serán evaluados como malos en este problema, ya que tenemos reglas del tipo *[16]{precio-compra=vhigh,puertas=2,maletero=small}  => {clase=unacc}*, donde ahora sin ningun tipo de duda estamos ante este tipo de coches, precios altos, 2 puertas y maleteros pequeños implicarán clases malas.
+
+Dado que lo que nos interesa es ver cuando será una evaluaciona aceptable y cuando no, en los próximos puntos realizaremos un análisis más exhaustivo para intentar obtener aún mejor información y representarla graficamente.  
+
+## 7 Enfoques avanzados
+
+### 7.1 Reglas generalizadas o gerarquicas
+
+Dado que los resultados vistos anteriormente no son muy buenos, se nos presenta la posibilidad de hacer las siguientes generalizaciones para ver si obtenemos mejores resultados:
+
+*Clase=unacc -> Clase=MalaEvaluacion
+
+*Clase=acc, Clase=good y Clase=vgood -> Clase=BuenaEvaluacion
+
+Para realizar este paso, primero copiaremos en dataset (para evitar modificar el original), cambiaremos estos valores y tras ello obtendremos de nuevo las reglas. 
+
+
+```{r}
+cargeneralizazo<-car
+cargeneralizazo$clase<-ifelse(cargeneralizazo$clase=="unacc","MalaEvaluacion","BuenaEvaluacion")
+cargeneralizazo$clase<-as.factor(cargeneralizazo$clase)
+head(cargeneralizazo,5)
+```
+
+Una vez hecho el cambio, obtendremos nuestras transacciones y reglas de asociación.
+
+
+```{r}
+cargeneralizazo.transactions <- as(cargeneralizazo, "transactions")
+
+rules.generalizadas <- apriori(cargeneralizazo.transactions, 
+                               parameter = list(support = 0.01, confidence = 0.8, minlen = 2))
+rules.generalizadas
+```
+
+Parece que obtenemos alguna reglas más que anterioremente. Vamos a filtrarlas por no redundantes e intentar obtener información de ellas. 
+
+```{r}
+rulesSorted = sort(rules.generalizadas, by = "confidence")
+subsetMatrix <- is.subset(rulesSorted, rulesSorted)
+subsetMatrix[lower.tri(subsetMatrix, diag=TRUE)] <- FALSE
+redundant <- colSums(subsetMatrix, na.rm=TRUE) >= 1
+rulesPruned <- rulesSorted[!redundant] 
+inspect(rulesPruned)
+```
+
+Parece que nuestro proceso de generalización de reglas ha surtido efecto y tenemos ya presencia de clase=BuenaEvaluacion en los consecuentes, que es la premisa que buscamos, es decir, ver cuando un coche será bien evaluado en función de sus características. Una función interesante para evaluar las reglas estará también en encontrar aquellas que están relacioandas con determinados ítems. Por ejemplo vamos a construir dos sets de reglas, uno para los de la clase MalaEvaluación y otro para los de la clase BuenaEvaluación.
+
+
+```{r}
+rules.malaeval<- apriori (cargeneralizazo, parameter=list(supp=0.01,conf = 0.8), 
+                          appearance =list (default="lhs",rhs="clase=MalaEvaluacion"), 
+                          control = list (verbose=F))
+
+rules.buenaeval<- apriori (cargeneralizazo, parameter=list(supp=0.01,conf = 0.8),
+                           appearance =list (default="lhs",rhs="clase=BuenaEvaluacion"), 
+                           control = list (verbose=F))
+```
+
+Ahora limpiaremos los sets de reglas redundantes. 
+
+```{r}
+#Mala evaluación
+rulesSorted = sort(rules.malaeval, by = "confidence")
+subsetMatrix <- is.subset(rulesSorted, rulesSorted)
+subsetMatrix[lower.tri(subsetMatrix, diag=TRUE)] <- FALSE
+redundant <- colSums(subsetMatrix, na.rm=TRUE) >= 1
+rulesPrunedMala <- rulesSorted[!redundant] 
+
+#Buena evaluación
+
+rulesSorted = sort(rules.buenaeval, by = "confidence")
+subsetMatrix <- is.subset(rulesSorted, rulesSorted)
+subsetMatrix[lower.tri(subsetMatrix, diag=TRUE)] <- FALSE
+redundant <- colSums(subsetMatrix, na.rm=TRUE) >= 1
+rulesPrunedBuena <- rulesSorted[!redundant] 
+```
+
+Por último, mostramos las reglas y las estudiamos:
+
+```{r}
+inspect(rulesPrunedBuena)
+```
+
+
+```{r}
+inspect(rulesPrunedMala)
+```
+
+### 7.2 Ítems negados
+
+### 7.3 Análisis por grupos
 
 
 
