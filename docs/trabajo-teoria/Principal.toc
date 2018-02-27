@@ -24,16 +24,22 @@
 \contentsline {subsubsection}{M\'etodos basados en instancia}{18}{section*.8}
 \contentsline {subsubsection}{M\'etodos basados en algoritmos}{18}{section*.9}
 \contentsline {subsection}{\numberline {3.2.2}M\'etodos Semi-Supervisados}{18}{subsection.3.2.2}
-\contentsline {subsection}{\numberline {3.2.3}M\'etodos No Supervisados}{18}{subsection.3.2.3}
-\contentsline {section}{\numberline {3.3}Validaci\'on}{18}{section.3.3}
-\contentsline {section}{\numberline {3.4}Aplicaciones}{20}{section.3.4}
-\contentsline {chapter}{\numberline {4}Reglas de Asociaci\'on}{22}{chapter.4}
-\contentsline {section}{\numberline {4.1}Introducci\'on}{22}{section.4.1}
-\contentsline {section}{\numberline {4.2}Validaci\'on}{23}{section.4.2}
-\contentsline {section}{\numberline {4.3}Obtenci\'on de reglas}{24}{section.4.3}
-\contentsline {section}{\numberline {4.4}Principales algoritmos}{25}{section.4.4}
-\contentsline {subsection}{\numberline {4.4.1}Apriori}{25}{subsection.4.4.1}
-\contentsline {subsection}{\numberline {4.4.2}Eclat}{26}{subsection.4.4.2}
-\contentsline {subsection}{\numberline {4.4.3}FP-Growth}{27}{subsection.4.4.3}
-\contentsline {section}{\numberline {4.5}Aspectos Avanzados}{28}{section.4.5}
-\contentsline {section}{\numberline {4.6}Aplicaciones}{28}{section.4.6}
+\contentsline {subsection}{\numberline {3.2.3}M\'etodos No Supervisados}{19}{subsection.3.2.3}
+\contentsline {subsubsection}{M\'etodos gr\'aficos}{20}{section*.10}
+\contentsline {subsubsection}{Vecinos cercanos}{20}{section*.11}
+\contentsline {subsubsection}{Clustering}{20}{section*.12}
+\contentsline {section}{\numberline {3.3}Validaci\'on}{20}{section.3.3}
+\contentsline {section}{\numberline {3.4}Aplicaciones}{22}{section.3.4}
+\contentsline {chapter}{\numberline {4}Reglas de Asociaci\'on}{24}{chapter.4}
+\contentsline {section}{\numberline {4.1}Introducci\'on}{24}{section.4.1}
+\contentsline {section}{\numberline {4.2}Validaci\'on}{25}{section.4.2}
+\contentsline {section}{\numberline {4.3}Obtenci\'on de reglas}{26}{section.4.3}
+\contentsline {section}{\numberline {4.4}Principales algoritmos}{27}{section.4.4}
+\contentsline {subsection}{\numberline {4.4.1}Apriori}{27}{subsection.4.4.1}
+\contentsline {subsection}{\numberline {4.4.2}Eclat}{28}{subsection.4.4.2}
+\contentsline {subsection}{\numberline {4.4.3}FP-Growth}{29}{subsection.4.4.3}
+\contentsline {section}{\numberline {4.5}Aspectos Avanzados}{30}{section.4.5}
+\contentsline {subsection}{\numberline {4.5.1}Interpretaci\'on}{30}{subsection.4.5.1}
+\contentsline {subsection}{\numberline {4.5.2}Reglas de asociaci\'on difusas}{30}{subsection.4.5.2}
+\contentsline {subsection}{\numberline {4.5.3}An\'alisis de reglas por grupos}{30}{subsection.4.5.3}
+\contentsline {section}{\numberline {4.6}Aplicaciones}{30}{section.4.6}

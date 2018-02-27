@@ -25,7 +25,15 @@ De esta pequeña introducción podríamos desgranar que la mayor dificultad en el p
 En esta sección trataremos sobre los distintos enfoques desde los que puede ser estudiada la detección de anomalías.
 \subsection{Métodos Supervisados}
 
-Estos métodos se basan en la construcción de un modelo de clasificación, basado en un conjunto de datos de entrenamiento donde tenemos anomalías etiquetadas como tal. Debemos tener en cuenta que la proporción de muestras que correspondan a una anomalía en relación con las muestras que no lo son, estarán en una gran minoría por lo que estaremos ante un problema de clases no balanceadas. Estos problemas son muy delicados y podrán afrontarse desde dos enfoques, según si nos centramos en las instancias o en el algoritmo.
+\begin{figure}[h]
+\centering
+\includegraphics[width=9cm]{./Anomalias/imagenes/supervisado.png}
+\caption{Ejemplo de problema supervisado.}
+\label{supervisado}
+\end{figure}
+
+
+Estos métodos se basan en la construcción de un modelo de clasificación, basado en un conjunto de datos de entrenamiento donde tenemos anomalías etiquetadas como tal (figura \ref{supervisado}). Debemos tener en cuenta que la proporción de muestras que correspondan a una anomalía en relación con las muestras que no lo son, estarán en una gran minoría por lo que estaremos ante un problema de clases no balanceadas. Estos problemas son muy delicados y podrán afrontarse desde dos enfoques, según si nos centramos en las instancias o en el algoritmo.
 
 \subsubsection{Métodos basados en instancia}
 
@@ -34,10 +42,38 @@ Estos métodos mutan los datos antes de aplicar la clasificación. Generalmente, s
 
 
 \subsubsection{Métodos basados en algoritmos}
- Estos métodos mantienen el conjunto de datos de entradas inamovible y se centran en mejorar el proceso de entrenamiento mediante el uso de pesos.
+ Estos métodos mantienen el conjunto de datos de entradas inamovible y se centran en mejorar el proceso de entrenamiento mediante el uso de pesos. Algunas de las técnicas más conocidas dentro de este área pueden ser, los algoritmos cost-sensitive (son los más dependientes del peso), el bagging o el boosting. 
 
 \subsection{Métodos Semi-Supervisados}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=9cm]{./Anomalias/imagenes/semisupervisado.png}
+\caption{Ejemplo de problema semi-supervisado.}
+\label{semisupervisado}
+\end{figure}
+
+En esta categoría, a diferencia de los métodos supervisados no tendremos en el dataset de entrenamiento ejemplos que correspondan a outliers (figura \ref{semisupervisado}), sino que aprenderemos los que no son outliers, y catalogaremos como tal un nuevo ejemplo, si difiere según ciertas medidas de los anteriores. Los métodos basados en esta técnica, son muy sensibles a \textbf{falsos positivos} y pueden ser basados en métodos de clasificación como los bayesianos, en reglas, en funciones kernel o en funciones históricas, que toman como premisa que las anomalías son eventos que no han tenido lugar en el pasado. 
+
 \subsection{Métodos No Supervisados}
+
+Los métodos vistos anteriormente, no dejan de ser en su esencia métodos de clasificación, en el que clasificamos anomalías en base a conocimiento previo. Es en el enfoque no supervisado, donde realmente encontramos la dificultad y el objetivo final de la detección de anomalías, ante un problema donde no sabemos que ejemplo corresponde a una anomalía y que no (figura \ref{nosupervisado}). En este enfoque tendremos métodos gráficos, métodos basados en vecinos cercanos y métodos basados en clustering. 
+
+Dada la importancia de estos métodos en la asignatura, aprendizaje no supervisado, los estudiaremos en detalle en los próximos puntos.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=9cm]{./Anomalias/imagenes/nosupervisado.png}
+\caption{Ejemplo de problema no supervisado.}
+\label{nosupervisado}
+\end{figure}
+	
+\subsubsection{Métodos gráficos}
+
+\subsubsection{Vecinos cercanos}
+
+\subsubsection{Clustering}	
+	
 	
 \section{Validación}
 \label{vali}
