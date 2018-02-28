@@ -27,13 +27,13 @@ La forma clásica de medir la bondad o ajuste de las reglas de asociación a un de
 	\begin{equation}
 	conf(X \rightarrow Y) = \frac{supp(X \rightarrow Y)}{supp(X)}
 	\end{equation}
-	\item Lift: El \textit{lift}, es una medida útil para evaluar la independencia entre los ítems de una determinada regla  de asociación. En una regla del tipo \textit{conf (X$\rightarrow$Y)}, esta medida representa el grado en que X tiende a ser frecuente cuando A está presente en la regla, o viceversa. El lift, quedará definido matemáticamente de la siguiente manera:
+	\item Lift: El \textit{lift}, es una medida útil para evaluar la independencia entre los ítems de una determinada regla  de asociación. En una regla del tipo \textit{lift (X$\rightarrow$Y)}, esta medida representa el grado en que X tiende a ser frecuente cuando A está presente en la regla, o viceversa. El lift, quedará definido matemáticamente de la siguiente manera:
 	\begin{equation}
 	lift(X \rightarrow Y) = \frac{conf(X \rightarrow Y)}{supp(Y)}
 	\end{equation}
 \end{itemize}
 
-Pese a que estas medidas son las más comunes y extendidas, hay innumerables propuestas de medias complementarias en la literatura, tales como la \textbf{convicción, factor de certeza, diferencia absoluta de confianza} entre otras muchas (figura \ref{medidas}).
+Pese a que estas medidas son las más comunes y extendidas, tienen ciertos problemas y limitaciones. Por ello, hay innumerables propuestas de medias complementarias en la literatura, tales como la \textbf{convicción, factor de certeza, diferencia absoluta de confianza} entre otras muchas (figura \ref{medidas}).
 
 \begin{figure}[H]
 \centering
@@ -103,11 +103,22 @@ Las reglas ed asociación, como casi la práctica totalidad de las tecnologías  o 
 
 \subsection{Interpretación}
 
+La interpretacion de las reglas como su propio nombre indica se centra en la obtención de reglas o información de los datos de salida proporcionados por los algoritmos, que puedan extrapolarse a conocimiento útil y potencialmente relevante en el ámbito de aplicación del problema. Algunas de las interpretaciones más relevantes pueden ser:
+
+\begin{itemize}
+	\item Tabular: Es la interpretación básica, nos lleva a representar las reglas en tablas para poder entenderlas y visualizarlas mejor. 
+	\item Ítems negados: Es una interpretación dummificada de las reglas, por las que para cada posible valor, creamos una nuevo ítem que es ese valor y si está presente (true) o no lo está (false). La explosión de ítems frecuentes y reglas es muy elevada en este caso y deberemos tener cuidado de eliminar reglas redundantes. 
+	\item Reglas Jerárquicas: También se las conoce como reglas generalizadas y se basan en la agregación de elementos bajo un mismo grupo. Por ejemplo, puede ser que en un determinado problema de cesta de la compra tengamos una granularidad a nivel de producto, \textit{\{Leche, Yogures, Manzanas \} => \{Harina\} }, podríamos generalizarlo a \textit{\{Lacteos, Fruta \} => \{Harina\}} lo que seguramente haría de la regla más potente y podríamos darnos cuenta de que estamos vendiendo muchos productos de ese tipo, lo que nos llevaría a proponer por ejemplo ofertas de otros tipos de fruta o adornos para pasteles, pues estaremos con mucha probabilidad frente a personas que van a realizar compras para hacer tartas o dulces. 
+	\item Reglas cuantitativas: Esta interpretación se usa cuando tenemos dominios numéricos, para los que deberemos dividir las reglas en intervalos. Es decir, si tenemos un valor altura, lo dividiremos en tres tipos de ítems altura=bajo cuando sea menor de 160cm, altura=medio cuando sea de 161cm a 175cm y altura=alto cuando sea mayor de 176cm. Este concepto, está muy relacionado con las reglas de asociación difusas pero dada la importancia de estas, las veremos en la siguiente sección. 
+\end{itemize}
+
 \subsection{Reglas de asociación difusas}
+
+Las reglas de asociación difusas son una especie de reglas cuantitativas en las definiremos grados de pertenencia a cada uno de los posibles valores que un ítem pueda tomar. Estas reglas, conllevarán el cálculo de las medidas tradicionales vistas en la sección \ref{validacion} de manera diferente ya que estas estarán influenciadas por el grado de pertenencia. Para su obtención,  hay dos claras vertientes de enfoques los que proponen realizar las particiones difusas a priori y extraer las reglas normalmente y los que proponen aprender reglas y particiones al mismo tiempo. 
 
 \subsection{Análisis de reglas por grupos}
 
-Pese a que el análisis de reglas de asociación se suele realizar de manera individual, hay diversos enfoques que proponen que un análisis en conjunto de las reglas dirigido en función de algun criterio o medidas
+Pese a que el análisis de reglas de asociación se suele realizar de manera individual, hay diversos enfoques que proponen que un análisis en conjunto de las reglas dirigido en función de algún criterio o medidas, pueden reportar en la obtención de información útil o en la validación de reglas individuales que puedan parecer interesantes y que en realidad no lo sean, o viceversa. Para un análisis por grupos, es menester haber aplicado anteriormente un análisis de ítems negados, así podremos analizar reglas junto a sus negadas lo que nos llevará en muchos casos a confirmar la fuerza de las reglas o incluso a refutar información.
 
 \section{Aplicaciones}
 \label{app}

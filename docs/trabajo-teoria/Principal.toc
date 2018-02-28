@@ -41,6 +41,6 @@
 \contentsline {subsection}{\numberline {4.4.3}FP-Growth}{31}{subsection.4.4.3}
 \contentsline {section}{\numberline {4.5}Aspectos Avanzados}{32}{section.4.5}
 \contentsline {subsection}{\numberline {4.5.1}Interpretaci\'on}{32}{subsection.4.5.1}
-\contentsline {subsection}{\numberline {4.5.2}Reglas de asociaci\'on difusas}{32}{subsection.4.5.2}
-\contentsline {subsection}{\numberline {4.5.3}An\'alisis de reglas por grupos}{32}{subsection.4.5.3}
-\contentsline {section}{\numberline {4.6}Aplicaciones}{32}{section.4.6}
+\contentsline {subsection}{\numberline {4.5.2}Reglas de asociaci\'on difusas}{33}{subsection.4.5.2}
+\contentsline {subsection}{\numberline {4.5.3}An\'alisis de reglas por grupos}{33}{subsection.4.5.3}
+\contentsline {section}{\numberline {4.6}Aplicaciones}{34}{section.4.6}
