@@ -27,7 +27,7 @@ En esta sección trataremos sobre los distintos enfoques desde los que puede ser 
 
 \begin{figure}[h]
 \centering
-\includegraphics[width=9cm]{./Anomalias/imagenes/supervisado.png}
+\includegraphics[width=7cm]{./Anomalias/imagenes/supervisado.png}
 \caption{Ejemplo de problema supervisado.}
 \label{supervisado}
 \end{figure}
@@ -48,7 +48,7 @@ Estos métodos mutan los datos antes de aplicar la clasificación. Generalmente, s
 
 \begin{figure}[h]
 \centering
-\includegraphics[width=9cm]{./Anomalias/imagenes/semisupervisado.png}
+\includegraphics[width=7cm]{./Anomalias/imagenes/semisupervisado.png}
 \caption{Ejemplo de problema semi-supervisado.}
 \label{semisupervisado}
 \end{figure}
@@ -57,24 +57,56 @@ En esta categoría, a diferencia de los métodos supervisados no tendremos en el d
 
 \subsection{Métodos No Supervisados}
 
-Los métodos vistos anteriormente, no dejan de ser en su esencia métodos de clasificación, en el que clasificamos anomalías en base a conocimiento previo. Es en el enfoque no supervisado, donde realmente encontramos la dificultad y el objetivo final de la detección de anomalías, ante un problema donde no sabemos que ejemplo corresponde a una anomalía y que no (figura \ref{nosupervisado}). En este enfoque tendremos métodos gráficos, métodos basados en vecinos cercanos y métodos basados en clustering. 
+Los métodos vistos anteriormente, no dejan de ser en su esencia métodos de clasificación, en el que clasificamos anomalías en base a conocimiento previo. Es en el enfoque no supervisado, donde realmente encontramos la dificultad y el objetivo final de la detección de anomalías, ante un problema donde no sabemos que ejemplo corresponde a una anomalía y que no (figura \ref{nosupervisado}). En este enfoque tendremos métodos gráficos, los métodos estadísticos, métodos basados en vecinos cercanos y métodos basados en clustering. 
 
 Dada la importancia de estos métodos en la asignatura, aprendizaje no supervisado, los estudiaremos en detalle en los próximos puntos.
 
 \begin{figure}[h]
 \centering
-\includegraphics[width=9cm]{./Anomalias/imagenes/nosupervisado.png}
+\includegraphics[width=7cm]{./Anomalias/imagenes/nosupervisado.png}
 \caption{Ejemplo de problema no supervisado.}
 \label{nosupervisado}
 \end{figure}
 	
 \subsubsection{Métodos gráficos}
 
+Los métodos gráficos se basan en representar gráficamente una base de datos y discernir por medio de medidas subjetivas que es una anomalía. Uno de los métodos más extendidos dentro de este tipo de de análisis de outliers es el biplot (figura \ref{biplot}), que se usa para representar las componentes principales cuando trabajamos con más de una variable. 
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=7cm]{./Anomalias/imagenes/biplot.jpeg}
+\caption{Ejemplo de gráfico biplot.}
+\label{biplot}
+\end{figure}
+
+Igualmente, la interpretación de este o cualquier otro tipo de gráficos para la identificación de outliers, es mas bien compleja y conlleva una carga temporal considerable por lo que hay otras técnicas que pueden ser más rápidas y eficientes. 
+
+\subsubsection{Métodos estadísticos}
+
+Dentro de estas técnicas, tendremos métodos paramétricos y métodos no paramétricos, además también podremos diferenciarlos entre los que tienen en cuenta una o más dimensiones (variables).
+
+\begin{enumerate}
+
+\item{ \textbf{Paramétricos}}: El método paramétrico por excelencia, se basa en la distancia intercuartil (IQR). Un ejemplo será outlier en la variable que estudiamos, si el valor de esta es 1.5 (outlier) o 3 (outlier extremo), por encima o por debajo del primer o tercer cuartil. 
+\item{\textbf{No paramétricos}}: Dentro de estos métodos, encontramos  métodos que estudian outliers en una variable y métodos que estudian outliers en varias variables.
+	\begin{itemize}
+		\item Métodos univariate: Estos métodos se basan en test estadísticos y en función del número de outliers podremos usar uno y otro. Si tenemos constancia de un outlier, deberemos usar el test de Grubs. Este método, aunque eficiente es muy sensible al masking, problema que se da cuando un outlier de mayor fuerza oculta otros posibles outliers menos evidentes pero que quizá puedan ser más interesantes para nuestro problema. En caso de tener más de un outlier, podemos usar el test de \textbf{Moore} o \textbf{Rosner}, en función de si nuestra hipótesis de partida es obtener k outliers o menos de k outliers respectivamente. 
+		\item Métodos bivariate: Estos métodos son utilizados cuando debemos obtener outliers en varias dimensiones de variables. La idea de estas técnicas se basa en la premisa de que si tenemos datos representados normalmente en dos dimensiones, podremos obtener outliers por valores extremos o por combinaciones anormales de valores tomando como medidas distancias a la media, varianzas y covarianzas respecto al `común' de los ejemplos. La medida más extendida es la distancia \textbf{Manhalanobis}, que es una versión del z-score donde se toma como medida la distancia al centroide de una distribución normal. Esta medida, tiene una variante más robusta o restrictiva, pero ambas son sensibles a distribuciones no lineales de variables y mezclas de  distribucioenes normales. 
+			\end{itemize}
+\end{enumerate}
+
 \subsubsection{Vecinos cercanos}
 
+Cuando la distribución de los ejemplos no es normal o no podemos conocerla, así como cuando la dimensionalidad del problema sea muy alta, las técnicas vistas anterior mente no pueden ser utilizadas. Para solventar estas limitaciones, aparecen técnicas como las basadas en vecinos cercanos que veremos en esta sección. 
+
+Los métodos de los vecinos más cercanos, se basan en el concepto de similitud de los datos. Para ello, se representan los datos como un vector de características sobre los que obtiene un indice de similitud entre cada una de las muestras en función de técnicas de distancias como las que vimos en la sección \ref{similitud}. 
+
+La mecánica de estos métodos se basa en obtener las distancias entre cada par de ejemplos, tras lo cual obtendremos los k vecinos más cercanos a cada ejemplo y obtendremos el indice de outlier de cada elemento respecto a sus vecinos más cercanos, que será la distancia. En el caso de outliers, esta diferirá mucho de los demás y podremos catalogar el ejemplo como outlier. En estas técnicas habrá también grados de pertenencia al conjunto de los outlier, ya que la distancia puede ser relativa. 
+
 \subsubsection{Clustering}	
-	
-	
+
+Estos métodos son similares a los vistos anteriormente en los vecinos más cercanos, pero con la diferencia de que se tienen en cuenta clusters o grupos de ejemplos en lugar de ejemplos por separado. Es decir, ontendremos distancias a los centroides o medoides de los cluster y asignaremos un valor de outlier en función de la distancia del ejemplo en cuestión al centro del cluster. 
+
 \section{Validación}
 \label{vali}
 
